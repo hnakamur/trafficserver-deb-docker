@@ -73,7 +73,6 @@ RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
     -D CMAKE_INSTALL_DOCDIR=${INSTALL_DOCDIR} \
     -D CMAKE_INSTALL_LOGDIR=${INSTALL_LOGDIR} \
     -D CMAKE_INSTALL_CACHEDIR=${INSTALL_CACHEDIR} \
-    -D ENABLE_WCCP=ON \
     -D ENABLE_MAXMIND_ACL=ON \
     -D ENABLE_URI_SIGNING=ON \
   && cmake --build ${BUILD_DIR} --verbose --parallel $jobs) \
