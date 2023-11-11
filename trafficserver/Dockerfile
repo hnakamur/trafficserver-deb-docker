@@ -51,7 +51,9 @@ ARG INSTALL_DOCDIR=share/doc
 ARG INSTALL_LOGDIR=var/log
 ARG INSTALL_CACHEDIR=var/cache
 RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
-  (cmake -B ${BUILD_DIR} \
+  (set -x; \
+  git log -1; \
+  cmake -B ${BUILD_DIR} \
     -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -D CMAKE_INSTALL_BINDIR=${INSTALL_BINDIR} \
     -D CMAKE_INSTALL_SBINDIR=${INSTALL_SBINDIR} \
@@ -65,6 +67,7 @@ RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
     -D CMAKE_INSTALL_DOCDIR=${INSTALL_DOCDIR} \
     -D CMAKE_INSTALL_LOGDIR=${INSTALL_LOGDIR} \
     -D CMAKE_INSTALL_CACHEDIR=${INSTALL_CACHEDIR} \
+    -D ENABLE_WCCP=1 \
   && cmake --build ${BUILD_DIR} --verbose --parallel $jobs) \
   2>&1 | tee ${SRC_DIR}/trafficserver-build.log
 RUN gzip --best ${SRC_DIR}/trafficserver-build.log
