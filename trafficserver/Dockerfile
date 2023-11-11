@@ -50,10 +50,15 @@ ARG INSTALL_DATADIR=share/data
 ARG INSTALL_DOCDIR=share/doc
 ARG INSTALL_LOGDIR=var/log
 ARG INSTALL_CACHEDIR=var/cache
+# Compiler flags for CMAKE_BUILD_TYPE
+# Release:        -O3 -DNDEBUG
+# RelWithDebInfo: -O2 -g -DNDEBUG
+ARG CMAKE_BUILD_TYPE=Release
 RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
   (set -x; \
   git log -1; \
   cmake -B ${BUILD_DIR} \
+    -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
     -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -D CMAKE_INSTALL_BINDIR=${INSTALL_BINDIR} \
     -D CMAKE_INSTALL_SBINDIR=${INSTALL_SBINDIR} \
