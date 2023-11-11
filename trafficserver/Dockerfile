@@ -28,6 +28,7 @@ WORKDIR ${SRC_DIR}
 ARG REPO_URL=https://github.com/apache/trafficserver
 RUN git clone --depth 1 ${REPO_URL}
 WORKDIR ${SRC_DIR}/trafficserver
+RUN git log -1
 
 # modify some instances of CMakeLists.txt
 RUN <<EOF cat >> ${SRC_DIR}/trafficserver/CMakeLists.txt
@@ -37,7 +38,6 @@ include(CPack)
 EOF
 
 ARG BUILD_DIR=${SRC_DIR}/trafficserver/build
-ARG MAX_JOBS=24
 ARG INSTALL_PREFIX=/opt/trafficserver
 ARG INSTALL_BINDIR=bin
 ARG INSTALL_SBINDIR=bin
@@ -55,10 +55,7 @@ ARG INSTALL_CACHEDIR=var/cache
 # Release:        -O3 -DNDEBUG
 # RelWithDebInfo: -O2 -g -DNDEBUG
 ARG CMAKE_BUILD_TYPE=Release
-RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
-  (set -x; \
-  git log -1; \
-  cmake -B ${BUILD_DIR} \
+RUN cmake -B ${BUILD_DIR} \
     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
     -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -D CMAKE_INSTALL_BINDIR=${INSTALL_BINDIR} \
@@ -74,10 +71,10 @@ RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
     -D CMAKE_INSTALL_LOGDIR=${INSTALL_LOGDIR} \
     -D CMAKE_INSTALL_CACHEDIR=${INSTALL_CACHEDIR} \
     -D ENABLE_MAXMIND_ACL=ON \
-    -D ENABLE_URI_SIGNING=ON \
-  && cmake --build ${BUILD_DIR} --verbose --parallel $jobs) \
-  2>&1 | tee ${SRC_DIR}/trafficserver-build.log
-RUN gzip --best ${SRC_DIR}/trafficserver-build.log
+    -D ENABLE_URI_SIGNING=ON
+ARG MAX_JOBS=24
+RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
+  cmake --build ${BUILD_DIR} --verbose --parallel $jobs
 
 USER root
 ARG DEST_DIR=${SRC_DIR}/trafficserver/dist
