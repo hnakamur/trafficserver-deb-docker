@@ -16,7 +16,8 @@ RUN apt-get update; \
     apt-get -y install libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
     libhwloc-dev libunwind8 libunwind-dev zlib1g-dev \
     tcl-dev tcl8.6-dev libjemalloc-dev libluajit-5.1-dev liblzma-dev \
-    libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev
+    libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
+    libmaxminddb-dev
 
 ARG SRC_DIR=/src
 ARG BUILD_USER=build
@@ -72,7 +73,8 @@ RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
     -D CMAKE_INSTALL_DOCDIR=${INSTALL_DOCDIR} \
     -D CMAKE_INSTALL_LOGDIR=${INSTALL_LOGDIR} \
     -D CMAKE_INSTALL_CACHEDIR=${INSTALL_CACHEDIR} \
-    -D ENABLE_WCCP=1 \
+    -D ENABLE_WCCP=ON \
+    -D ENABLE_MAXMIND_ACL=ON \
   && cmake --build ${BUILD_DIR} --verbose --parallel $jobs) \
   2>&1 | tee ${SRC_DIR}/trafficserver-build.log
 RUN gzip --best ${SRC_DIR}/trafficserver-build.log
