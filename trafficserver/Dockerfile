@@ -4,16 +4,17 @@ FROM ${FROM}
 
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
-RUN apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata apt-utils; \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata apt-utils && \
     # Compilers
-    apt-get -y install  ccache make pkgconf bison flex g++ clang gettext libc++-dev \
-    # CMake
-    cmake \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    ccache make pkgconf bison flex g++ clang gettext libc++-dev \
+    cmake ninja-build \
     # Various other tools
-    dpkg-dev git distcc file wget openssl hwloc intltool-debian; \
+    dpkg-dev git distcc file wget openssl hwloc intltool-debian && \
     # Devel packages that ATS needs
-    apt-get -y install libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
     libhwloc-dev libunwind8 libunwind-dev zlib1g-dev \
     tcl-dev tcl8.6-dev libjemalloc-dev libluajit-5.1-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
@@ -55,11 +56,13 @@ ARG INSTALL_CACHEDIR=var/cache
 # Release:        -O3 -DNDEBUG
 # RelWithDebInfo: -O2 -g -DNDEBUG
 ARG CMAKE_BUILD_TYPE=Release
+ARG CMAKE_GENERATOR=Ninja
 ARG ENABLE_MAXMIND_ACL=ON
 ARG ENABLE_URI_SIGNING=ON
 ARG ENABLE_JEMALLOC=ON
 RUN cmake -B ${BUILD_DIR} \
     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+    -D CMAKE_GENERATOR=${CMAKE_GENERATOR} \
     -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -D CMAKE_INSTALL_BINDIR=${INSTALL_BINDIR} \
     -D CMAKE_INSTALL_SBINDIR=${INSTALL_SBINDIR} \
