@@ -1,0 +1,6 @@
+trafficserver-dbgsym_10.0.0~20231117-1hn1ubuntu2204_amd64.ddeb debug optional automatic=yes
+trafficserver-dev_10.0.0~20231117-1hn1ubuntu2204_amd64.deb web optional
+trafficserver-experimental-plugins-dbgsym_10.0.0~20231117-1hn1ubuntu2204_amd64.ddeb debug optional automatic=yes
+trafficserver-experimental-plugins_10.0.0~20231117-1hn1ubuntu2204_amd64.deb web optional
+trafficserver_10.0.0~20231117-1hn1ubuntu2204_amd64.buildinfo web optional
+trafficserver_10.0.0~20231117-1hn1ubuntu2204_amd64.deb web optional

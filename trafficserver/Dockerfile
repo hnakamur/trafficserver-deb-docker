@@ -10,6 +10,8 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache make pkgconf bison flex g++ clang gettext libc++-dev \
     cmake ninja-build \
+    # tools to create deb packages
+    debhelper dpkg-dev lsb-release xz-utils \
     # Various other tools
     dpkg-dev git distcc file wget openssl hwloc intltool-debian && \
     # Devel packages that ATS needs
@@ -28,81 +30,16 @@ USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
 ARG REPO_URL=https://github.com/apache/trafficserver
 RUN git clone --depth 1 ${REPO_URL}
+
+ARG PKG_VERSION
+RUN tar cf - --exclude=.git trafficserver | xz -c --best > trafficserver_${PKG_VERSION}.orig.tar.xz
+
 WORKDIR ${SRC_DIR}/trafficserver
 RUN git log -1
 
-# modify some instances of CMakeLists.txt
-RUN <<EOF cat >> ${SRC_DIR}/trafficserver/CMakeLists.txt
-
-# Packaging
-include(CPack)
-EOF
-
-ARG BUILD_DIR=${SRC_DIR}/trafficserver/build
-ARG INSTALL_PREFIX=/opt/trafficserver
-ARG INSTALL_BINDIR=bin
-ARG INSTALL_SBINDIR=bin
-ARG INSTALL_LIBDIR=lib
-ARG INSTALL_LIBEXECDIR=lib/modules
-ARG INSTALL_SYSCONFDIR=etc
-ARG INSTALL_LOCALSTATEDIR=var
-ARG INSTALL_RUNSTATEDIR=var/run
-ARG INSTALL_DATAROOTDIR=share
-ARG INSTALL_DATADIR=share/data
-ARG INSTALL_DOCDIR=share/doc
-ARG INSTALL_LOGDIR=var/log
-ARG INSTALL_CACHEDIR=var/cache
-# Compiler flags for CMAKE_BUILD_TYPE
-# Release:        -O3 -DNDEBUG
-# RelWithDebInfo: -O2 -g -DNDEBUG
-ARG CMAKE_BUILD_TYPE=Release
-ARG CMAKE_GENERATOR=Ninja
-ARG ENABLE_MAXMIND_ACL=ON
-ARG ENABLE_URI_SIGNING=ON
-ARG ENABLE_JEMALLOC=ON
-RUN cmake -B ${BUILD_DIR} \
-    -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
-    -D CMAKE_GENERATOR=${CMAKE_GENERATOR} \
-    -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-    -D CMAKE_INSTALL_BINDIR=${INSTALL_BINDIR} \
-    -D CMAKE_INSTALL_SBINDIR=${INSTALL_SBINDIR} \
-    -D CMAKE_INSTALL_LIBDIR=${INSTALL_LIBDIR} \
-    -D CMAKE_INSTALL_LIBEXECDIR=${INSTALL_LIBEXECDIR} \
-    -D CMAKE_INSTALL_SYSCONFDIR=${INSTALL_SYSCONFDIR} \
-    -D CMAKE_INSTALL_LOCALSTATEDIR=${INSTALL_LOCALSTATEDIR} \
-    -D CMAKE_INSTALL_RUNSTATEDIR=${INSTALL_RUNSTATEDIR} \
-    -D CMAKE_INSTALL_DATAROOTDIR=${INSTALL_DATAROOTDIR} \
-    -D CMAKE_INSTALL_DATADIR=${INSTALL_DATADIR} \
-    -D CMAKE_INSTALL_DOCDIR=${INSTALL_DOCDIR} \
-    -D CMAKE_INSTALL_LOGDIR=${INSTALL_LOGDIR} \
-    -D CMAKE_INSTALL_CACHEDIR=${INSTALL_CACHEDIR} \
-    -D ENABLE_MAXMIND_ACL=${ENABLE_MAXMIND_ACL} \
-    -D ENABLE_URI_SIGNING=${ENABLE_URI_SIGNING} \
-    -D ENABLE_JEMALLOC=${ENABLE_JEMALLOC}
-ARG MAX_JOBS=24
-RUN n=$(nproc); jobs=$(( $n > $MAX_JOBS ? $MAX_JOBS : $n )); \
-  cmake --build ${BUILD_DIR} --verbose --parallel $jobs
+COPY --chown=build:build ./debian /src/trafficserver/debian/
+ARG PKG_REL_DISTRIB
+RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/DebRelCodename/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
+RUN dpkg-buildpackage -us -uc
 
 USER root
-ARG DEST_DIR=${SRC_DIR}/trafficserver/dist
-RUN DESTDIR=${DEST_DIR} cmake --install ${BUILD_DIR}
-WORKDIR ${BUILD_DIR}
-RUN mkdir -p debian
-RUN touch debian/control
-RUN dpkg-shlibdeps --ignore-missing-info -l${DEST_DIR}${INSTALL_PREFIX}/${INSTALL_LIBDIR} \
-  ${DEST_DIR}${INSTALL_PREFIX}/${INSTALL_BINDIR}/traffic_server
-
-ARG PKG_NAME=trafficserver
-ARG PKG_DESCRIPTION="fast, scalable and extensible HTTP/1.1 and HTTP/2 compliant caching proxy server"
-ARG PKG_VERSION
-ARG PKG_RELEASE
-ARG PKG_MAINTAINER
-RUN DESTDIR=${DEST_DIR} cpack -G DEB \
-  -D CPACK_PACKAGING_INSTALL_PREFIX=${INSTALL_PREFIX} \
-  -D CPACK_DEBIAN_PACKAGE_DEPENDS="$(sed 's/^shlibs:Depends=//' debian/substvars)" \
-  -D CPACK_DEBIAN_PACKAGE_NAME=${PKG_NAME} \
-  -D CPACK_DEBIAN_PACKAGE_VERSION=${PKG_VERSION} \
-  -D CPACK_DEBIAN_PACKAGE_RELEASE=${PKG_RELEASE} \
-  -D CPACK_DEBIAN_FILE_NAME=${PKG_NAME}_${PKG_VERSION}-${PKG_RELEASE}.deb \
-  -D CPACK_PACKAGE_DESCRIPTION="${PKG_DESCRIPTION}" \
-  -D CPACK_PACKAGE_CONTACT="${PKG_MAINTAINER}"
