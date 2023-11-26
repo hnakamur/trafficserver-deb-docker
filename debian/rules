@@ -41,7 +41,8 @@ override_dh_auto_configure:
 	-DENABLE_MAXMIND_ACL=ON \
 	-DENABLE_URI_SIGNING=ON \
 	-DENABLE_JEMALLOC=ON \
-	-DENABLE_AUTEST=ON
+	-DENABLE_AUTEST=ON \
+	-DCMAKE_PROGRAM_PATH=/src/.local/bin
 
 override_dh_auto_build:
 	cmake --build $(BUILD_DIR) --parallel --verbose

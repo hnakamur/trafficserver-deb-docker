@@ -35,14 +35,18 @@ RUN apt-get update && \
     libhwloc-dev libunwind8 libunwind-dev zlib1g-dev \
     tcl-dev tcl8.6-dev libjemalloc-dev libluajit-5.1-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
-    libmaxminddb-dev libjansson-dev libcjose-dev
+    libmaxminddb-dev libjansson-dev libcjose-dev \
+    # packages that autest needs
+    python3 python3-virtualenv python3-gunicorn python3-requests python3-httpbin
 
 ARG SRC_DIR=/src
 ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} ${BUILD_USER}
 
-COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ /src/trafficserver/
 USER ${BUILD_USER}
+RUN pip3 install pipenv
+
+COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ /src/trafficserver/
 WORKDIR ${SRC_DIR}
 ARG PKG_VERSION
 RUN tar cf - --exclude=.git trafficserver | xz -c --best > trafficserver_${PKG_VERSION}.orig.tar.xz
