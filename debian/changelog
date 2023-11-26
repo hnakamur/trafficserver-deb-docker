@@ -1,0 +1,5 @@
+trafficserver (10.0.0~20231126-1hn1DebRelDistrib) DebRelCodename; urgency=medium
+
+  * Initial release
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Sun, 26 Nov 2023 10:38:00 +0900

@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+export DH_VERBOSE = 1
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
+
+%:
+	LANG=C dh $@
+
+override_dh_auto_configure:
+	cmake -B $(BUILD_DIR) -G Ninja \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_CXX_FLAGS="-ffile-prefix-map=/src/trafficserver=. -fstack-protector-strong -Wformat -Werror=format-security -g" \
+	-DCMAKE_C_FLAGS="-ffile-prefix-map=/src/trafficserver=. -fstack-protector-strong -Wformat -Werror=format-security -g" \
+	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
+	-DCMAKE_INSTALL_BINDIR=bin \
+	-DCMAKE_INSTALL_SBINDIR=bin \
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DCMAKE_INSTALL_LIBEXECDIR=lib/modules \
+	-DCMAKE_INSTALL_SYSCONFDIR=etc \
+	-DCMAKE_INSTALL_LOCALSTATEDIR=var \
+	-DCMAKE_INSTALL_RUNSTATEDIR=var/run \
+	-DCMAKE_INSTALL_DATAROOTDIR=share \
+	-DCMAKE_INSTALL_DATADIR=share/data \
+	-DCMAKE_INSTALL_DOCDIR=share/doc \
+	-DCMAKE_INSTALL_LOGDIR=var/log \
+	-DCMAKE_INSTALL_CACHEDIR=var/cache \
+	-DBUILD_EXPERIMENTAL_PLUGINS=ON \
+	-DENABLE_MAXMIND_ACL=ON \
+	-DENABLE_URI_SIGNING=ON \
+	-DENABLE_JEMALLOC=ON
+
+override_dh_auto_build:
+	cmake --build $(BUILD_DIR) --parallel --verbose
+
+override_dh_auto_install:
+	DESTDIR=./debian/tmp cmake --install $(BUILD_DIR)

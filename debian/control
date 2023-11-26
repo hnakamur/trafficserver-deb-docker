@@ -1,0 +1,53 @@
+Source: trafficserver
+Section: web
+Priority: optional
+Maintainer: Hiroaki Nakamura <hnakamur@gmail.com>
+Build-Depends: debhelper-compat (= 13), cmake, ninja-build,
+  libssl-dev, libexpat1-dev, libpcre3-dev, libcap-dev,
+  libhwloc-dev, libunwind8, libunwind-dev, zlib1g-dev,
+  tcl-dev, tcl8.6-dev, libjemalloc-dev, libluajit-5.1-dev, liblzma-dev,
+  libhiredis-dev, libbrotli-dev, libncurses-dev, libgeoip-dev, libmagick++-dev,
+  libmaxminddb-dev, libjansson-dev, libcjose-dev
+Standards-Version: 4.6.0
+Homepage: https://trafficserver.apache.org/
+Vcs-Browser: https://github.com/hnakamur/trafficserver-deb-docker
+Vcs-Git: https://github.com/hnakamur/trafficserver-deb-docker.git
+Rules-Requires-Root: no
+
+Package: trafficserver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: fast, scalable and extensible HTTP caching proxy server
+ This package provides the Apache Traffic Server, a fast, scalable reverse
+ proxy server which may operate as forward proxy as well. Apache Traffic Server
+ supports:
+ .
+   * Caching: improve response time while reducing server load and bandwidth
+     needs by caching and reusing frequently-requested web pages, images, and
+     web service calls.
+   * Proxying: add keep-alive, filter or anonymize content requests, or add
+     load balancing by adding a proxy layer.
+   * Scaling: handle 10s of thousands of requests per second on modern SMP
+     hardware.
+   * Extensions: use the API to do anything from modifying HTTP headers to
+     handling ESI requests to writing your own cache algorithm.
+
+Package: trafficserver-experimental-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: trafficserver (= ${binary:Version})
+Breaks: trafficserver (<< 10.0.0~)
+Description: experimental plugins for Apache Traffic Server
+ This package provides the Apache Traffic Server plugins marked as
+ experimental.
+ .
+ Please note that these plugins can be removed without priori notice, or
+ promoted as stable plugin. In the last case, they'll be moved from
+ trafficserver-experimental-plugins to trafficserver package.
+
+Package: trafficserver-dev
+Architecture: any
+Depends: ${misc:Depends}, trafficserver (= ${binary:Version})
+Description: Apache Traffic Server Software Developers Kit (SDK)
+ This package provides the Apache Traffic Server Software Developers Kit, which
+ consists of: a collection of development header and static library files.
