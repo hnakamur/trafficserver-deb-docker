@@ -20,6 +20,8 @@ export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
 override_dh_auto_configure:
 	cmake -B $(BUILD_DIR) -G Ninja \
 	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_CXX_COMPILER=clang++-16 \
+	-DCMAKE_C_COMPILER=clang-16 \
 	-DCMAKE_CXX_FLAGS="-ffile-prefix-map=/src/trafficserver=. -fstack-protector-strong -Wformat -Werror=format-security -g" \
 	-DCMAKE_C_FLAGS="-ffile-prefix-map=/src/trafficserver=. -fstack-protector-strong -Wformat -Werror=format-security -g" \
 	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
@@ -42,6 +44,11 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	cmake --build $(BUILD_DIR) --parallel --verbose
+
+override_dh_dwz:
+	# skip dwz since it does not work well with clang >= 14.
+	# https://groups.google.com/g/linux.debian.devel/c/BdkfKzS8Z70
+	true
 
 override_dh_auto_install:
 	DESTDIR=./debian/tmp cmake --install $(BUILD_DIR)

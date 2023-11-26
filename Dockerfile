@@ -2,13 +2,28 @@
 ARG FROM=ubuntu:22.04
 FROM ${FROM}
 
+ARG LLVM_MAJOR_VERSION=16
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install curl lsb-release dpkg && \
+    mkdir -p /etc/apt/keyrings && \
+    apt_key_path=/etc/apt/keyrings/apt.llvm.org.asc; \
+    curl -sS -o $apt_key_path https://apt.llvm.org/llvm-snapshot.gpg.key && \
+    arch=$(dpkg --print-architecture); \
+    codename=$(lsb_release -sc); \
+    cat <<EOF > /etc/apt/sources.list.d/llvm-${LLVM_MAJOR_VERSION}.list
+deb [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
+deb-src [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
+EOF
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install clang-${LLVM_MAJOR_VERSION}
+
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata apt-utils && \
     # Compilers
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    ccache make pkgconf bison flex g++ clang gettext libc++-dev \
+    ccache pkgconf bison flex gettext libc++-dev \
     cmake ninja-build \
     # tools to create deb packages
     debhelper dpkg-dev lsb-release xz-utils \
