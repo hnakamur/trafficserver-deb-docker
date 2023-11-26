@@ -41,13 +41,15 @@ override_dh_auto_configure:
 	-DENABLE_MAXMIND_ACL=ON \
 	-DENABLE_URI_SIGNING=ON \
 	-DENABLE_JEMALLOC=ON \
-	-DCMAKE_PROGRAM_PATH=/src/.local/bin
+	-DCMAKE_PROGRAM_PATH=/src/.local/bin \
+	-DENABLE_AUTEST=ON
 
 override_dh_auto_build:
 	cmake --build $(BUILD_DIR) --parallel --verbose
 
 override_dh_auto_test:
 	cmake --build $(BUILD_DIR) --target test
+	# cmake --build $(BUILD_DIR) --target autest
 
 override_dh_dwz:
 	# skip dwz since it does not work well with clang >= 14.
