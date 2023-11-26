@@ -1,0 +1,75 @@
+diff --git a/include/ts/ts.h b/include/ts/ts.h
+index 0bbd31636..c567026b5 100644
+--- a/include/ts/ts.h
++++ b/include/ts/ts.h
+@@ -2871,6 +2871,11 @@ namespace c
+    */
+   TSTxnType TSHttpTxnTypeGet(TSHttpTxn txnp);
+ 
++  /*
++   * Get entry count in parent.config.
++   */
++  int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
++
+ } // end namespace c
+ 
+ template <typename T>
+diff --git a/plugins/lua/ts_lua_http.cc b/plugins/lua/ts_lua_http.cc
+index ad33deac7..70dafcd68 100644
+--- a/plugins/lua/ts_lua_http.cc
++++ b/plugins/lua/ts_lua_http.cc
+@@ -128,6 +128,8 @@ static int ts_lua_http_req_transform_get_downstream_watermark_bytes(lua_State *L
+ static int ts_lua_http_req_transform_set_downstream_watermark_bytes(lua_State *L);
+ static int ts_lua_http_req_transform_set_upstream_bytes(lua_State *L);
+ 
++static int ts_lua_http_get_parent_table_entry_count(lua_State *L);
++
+ void
+ ts_lua_inject_http_api(lua_State *L)
+ {
+@@ -322,6 +324,9 @@ ts_lua_inject_http_misc_api(lua_State *L)
+   lua_pushcfunction(L, ts_lua_http_get_ssn_remote_addr);
+   lua_setfield(L, -2, "get_ssn_remote_addr");
+ 
++  lua_pushcfunction(L, ts_lua_http_get_parent_table_entry_count);
++  lua_setfield(L, -2, "get_parent_table_entry_count");
++
+   ts_lua_inject_server_state_variables(L);
+ }
+ 
+@@ -1195,3 +1200,15 @@ ts_lua_http_req_transform_set_upstream_bytes(lua_State *L)
+ {
+   return ts_lua_http_resp_transform_set_downstream_bytes(L);
+ }
++
++static int
++ts_lua_http_get_parent_table_entry_count(lua_State *L)
++{
++  ts_lua_http_ctx *http_ctx;
++
++  GET_HTTP_CONTEXT(http_ctx, L);
++
++  int count = TSHttpParentTableGetEntryCount(http_ctx->txnp);
++  lua_pushinteger(L, (lua_Integer)count);
++  return 1;
++}
+diff --git a/src/api/InkAPI.cc b/src/api/InkAPI.cc
+index bc1a212b5..c53583fca 100644
+--- a/src/api/InkAPI.cc
++++ b/src/api/InkAPI.cc
+@@ -9784,3 +9784,15 @@ tsapi::c::TSHttpTxnTypeGet(TSHttpTxn txnp)
+   }
+   return retval;
+ }
++
++/*
++ * Get entry count in parent.config.
++ */
++int
++tsapi::c::TSHttpParentTableGetEntryCount(TSHttpTxn txnp)
++{
++  HttpSM *sm             = reinterpret_cast<HttpSM *>(txnp);
++  HttpTransact::State *s = &(sm->t_state);
++  return s->parent_params && s->parent_params->parent_table
++    ? s->parent_params->parent_table->getEntryCount() : 0;
++}
