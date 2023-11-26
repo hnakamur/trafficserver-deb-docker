@@ -40,10 +40,14 @@ override_dh_auto_configure:
 	-DBUILD_EXPERIMENTAL_PLUGINS=ON \
 	-DENABLE_MAXMIND_ACL=ON \
 	-DENABLE_URI_SIGNING=ON \
-	-DENABLE_JEMALLOC=ON
+	-DENABLE_JEMALLOC=ON \
+	-DENABLE_AUTEST=ON
 
 override_dh_auto_build:
 	cmake --build $(BUILD_DIR) --parallel --verbose
+
+override_dh_auto_test:
+	cmake --build $(BUILD_DIR) test
 
 override_dh_dwz:
 	# skip dwz since it does not work well with clang >= 14.
