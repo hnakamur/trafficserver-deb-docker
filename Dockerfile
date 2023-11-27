@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG OS_TYPE=ubuntu
 ARG OS_VERSION=22.04
-FROM ${OS_TYPE}:${OS_VERSION}
+FROM ${OS_TYPE}:${OS_VERSION} as base
 
 ARG LLVM_MAJOR_VERSION=16
 RUN apt-get update && \
@@ -47,7 +47,7 @@ RUN set -x; if [ $(lsb_release -is) = "Debian" ]; then \
 
 ARG SRC_DIR=/src
 ARG BUILD_USER=build
-RUN useradd -m -d ${SRC_DIR} ${BUILD_USER}
+RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
 
 USER ${BUILD_USER}
 RUN set -x; if [ $(lsb_release -is) = "Ubuntu" ]; then \
@@ -66,3 +66,42 @@ RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/DebRelCodename/$(lsb_release -
 RUN dpkg-buildpackage -us -uc
 
 USER root
+
+FROM base as autest
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    quilt telnet
+RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
+RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
+
+RUN build_dir=debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
+    cat <<EOF > /usr/local/bin/autest-all.sh
+#!/bin/bash
+set -eu
+cd ${SRC_DIR}/trafficserver
+cmake --build ${build_dir} --target autest --verbose
+EOF
+
+RUN build_dir_fullpath=${SRC_DIR}/trafficserver/debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
+    arch=$(dpkg --print-architecture); \
+  if [ $(lsb_release -is) = "Ubuntu" ]; then \
+    pipenv=${SRC_DIR}/.local/bin/pipenv; \
+  else \
+    pipenv=/usr/bin/pipenv; \
+  fi; \
+  cat <<EOF > /usr/local/bin/my-autest.sh
+#!/bin/bash
+set -eu
+cd ${build_dir_fullpath}/tests
+PIPENV_VENV_IN_PROJECT=True ${pipenv} install 
+PIPENV_VENV_IN_PROJECT=True ${pipenv} run env autest "\$@" \
+  --directory /src/trafficserver/tests/gold_tests \
+  --ats-bin=/opt/trafficserver/bin \
+  --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.10.1/linux-${arch} \
+  --build-root ${build_dir_fullpath} \
+  --sandbox ${build_dir_fullpath}/_sandbox
+EOF
+RUN chmod +x /usr/local/bin/autest-all.sh /usr/local/bin/my-autest.sh
+
+USER ${BUILD_USER}
+ENV LANG=C
+RUN QUILT_PATCHES=debian/patches quilt push -a
