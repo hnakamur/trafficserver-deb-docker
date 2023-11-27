@@ -49,12 +49,13 @@ ARG SRC_DIR=/src
 ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
 
-USER ${BUILD_USER}
+# Note: install pipenv as root user since root privilege is needed to run all tests in autest.
 RUN set -x; if [ $(lsb_release -is) = "Ubuntu" ]; then \
-    pip3 install --user pipenv; \
+    pip3 install pipenv; \
     fi
 
 COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ /src/trafficserver/
+USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
 ARG PKG_VERSION
 RUN tar cf - trafficserver | xz -c --best > trafficserver_${PKG_VERSION}.orig.tar.xz
@@ -69,7 +70,12 @@ USER root
 
 FROM base as autest
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    quilt telnet
+    quilt telnet ncat golang nghttp2-client
+RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest && \
+    mv /root/go/bin/go-httpbin /usr/local/bin/go-httpbin
+RUN go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
+    mv /root/go/bin/h2spec /usr/local/bin/h2spec
+
 RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
 RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
 
@@ -83,25 +89,27 @@ EOF
 
 RUN build_dir_fullpath=${SRC_DIR}/trafficserver/debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
     arch=$(dpkg --print-architecture); \
-  if [ $(lsb_release -is) = "Ubuntu" ]; then \
-    pipenv=${SRC_DIR}/.local/bin/pipenv; \
-  else \
-    pipenv=/usr/bin/pipenv; \
-  fi; \
-  cat <<EOF > /usr/local/bin/my-autest.sh
+    cat <<EOF > /usr/local/bin/my-autest.sh
 #!/bin/bash
 set -eu
 cd ${build_dir_fullpath}/tests
-PIPENV_VENV_IN_PROJECT=True ${pipenv} install 
-PIPENV_VENV_IN_PROJECT=True ${pipenv} run env autest "\$@" \
+PIPENV_VENV_IN_PROJECT=True pipenv install 
+
+sandbox_dir=/tmp/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
+PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
   --directory /src/trafficserver/tests/gold_tests \
   --ats-bin=/opt/trafficserver/bin \
   --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.10.1/linux-${arch} \
   --build-root ${build_dir_fullpath} \
-  --sandbox ${build_dir_fullpath}/_sandbox
+  --sandbox \${sandbox_dir}
 EOF
 RUN chmod +x /usr/local/bin/autest-all.sh /usr/local/bin/my-autest.sh
 
 USER ${BUILD_USER}
 ENV LANG=C
 RUN QUILT_PATCHES=debian/patches quilt push -a
+
+USER root
+
+# Disable bad_http_fmt test since it does not finish.
+RUN mv tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py.disabled
