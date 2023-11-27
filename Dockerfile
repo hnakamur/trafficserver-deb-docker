@@ -79,6 +79,8 @@ RUN go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
 
 RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
 RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
+RUN mkdir -p /test
+RUN chown nobody:nogroup /test
 
 RUN build_dir=debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
     cat <<EOF > /usr/local/bin/autest-all.sh
@@ -96,7 +98,7 @@ set -eu
 cd ${build_dir_fullpath}/tests
 PIPENV_VENV_IN_PROJECT=True pipenv install 
 
-sandbox_dir=/tmp/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
+sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
 PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
   --directory /src/trafficserver/tests/gold_tests \
   --ats-bin=/opt/trafficserver/bin \
