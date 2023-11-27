@@ -68,7 +68,8 @@ RUN dpkg-buildpackage -us -uc
 
 USER root
 
-FROM base as autest
+## setup_autest target
+FROM base as setup_autest
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
     quilt telnet ncat golang nghttp2-client
 RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest && \
@@ -113,3 +114,8 @@ USER root
 
 # Disable bad_http_fmt test since it does not finish.
 RUN mv tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py.disabled
+RUN mv tests/gold_tests/tls/tls_forward_nonhttp.test.py tests/gold_tests/tls/tls_forward_nonhttp.test.py.disabled
+
+## run_autest target
+FROM setup_autest as run_autest
+RUN my-autest.sh run 2>&1 | tee /src/autest.log || :

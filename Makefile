@@ -26,7 +26,16 @@ build-ubuntu2204:
 
 run-ubuntu2204:
 	BUILDKIT_PROGRESS=plain docker build \
-		--target autest \
+		--target setup_autest \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
+		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
+		-t ats-ubuntu2204 .
+	docker run --rm -it ats-ubuntu2204 bash
+
+autest-ubuntu2204:
+	BUILDKIT_PROGRESS=plain docker build \
+		--target run_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -53,7 +62,16 @@ build-debian12:
 
 run-debian12:
 	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
-		--target autest \
+		--target setup_autest \
+		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
+		--build-arg PKG_REL_DISTRIB=debian12 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
+		-t ats-debian12 .
+	docker run --rm -it ats-debian12 bash
+
+autest-debian12:
+	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
+		--target run_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
