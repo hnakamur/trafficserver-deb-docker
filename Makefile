@@ -20,9 +20,9 @@ build-ubuntu2204:
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
 	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
-	    --file ubuntu2204.Dockerfile \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
 		-t ats-ubuntu2204 . \
 	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
@@ -41,9 +41,9 @@ build-debian12:
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
 	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
-	    --file debian12.Dockerfile \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
 		-t ats-debian12 . \
 	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log

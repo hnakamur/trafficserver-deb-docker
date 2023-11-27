@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG FROM=ubuntu:22.04
-FROM ${FROM}
+ARG OS_TYPE=ubuntu
+ARG OS_VERSION=22.04
+FROM ${OS_TYPE}:${OS_VERSION}
 
 ARG LLVM_MAJOR_VERSION=16
 RUN apt-get update && \
@@ -37,15 +38,21 @@ RUN apt-get update && \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
     libmaxminddb-dev libjansson-dev libcjose-dev \
     # packages that autest needs
-    python3-full python3-pip python3-virtualenv \
+    python3 python3-pip python3-virtualenv \
     python3-gunicorn python3-requests python3-httpbin
+RUN set -x; if [ $(lsb_release -is) = "Debian" ]; then \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    pipenv; \
+    fi
 
 ARG SRC_DIR=/src
 ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} ${BUILD_USER}
 
 USER ${BUILD_USER}
-RUN pip3 install pipenv
+RUN set -x; if [ $(lsb_release -is) = "Ubuntu" ]; then \
+    pip3 install --user pipenv; \
+    fi
 
 COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ /src/trafficserver/
 WORKDIR ${SRC_DIR}
