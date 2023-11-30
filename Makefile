@@ -17,6 +17,7 @@ build-ubuntu2204:
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
 	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
+	        --target base \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -53,6 +54,7 @@ build-debian12:
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
 	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
+	        --target base \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
