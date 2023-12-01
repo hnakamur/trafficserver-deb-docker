@@ -6,18 +6,21 @@ else
 DOCKER_NO_CACHE=--no-cache
 endif
 
+LOGUNLIMITED_BUILDER=logunlimited
+
 # Ubuntu 22.04
 deb-ubuntu2204: build-ubuntu2204
 	docker run --rm -v ./dist-ubuntu2204:/dist ats-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 
-build-ubuntu2204:
+build-ubuntu2204: buildkit-logunlimited
 	mkdir -p dist-ubuntu2204
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
-	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
-	        --target base \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
+	    --target base \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -25,8 +28,9 @@ build-ubuntu2204:
 	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
-run-ubuntu2204:
-	BUILDKIT_PROGRESS=plain docker build \
+run-ubuntu2204: buildkit-logunlimited
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
 		--target setup_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
@@ -34,8 +38,9 @@ run-ubuntu2204:
 		-t ats-ubuntu2204 .
 	docker run --rm -it ats-ubuntu2204 bash
 
-autest-ubuntu2204:
-	BUILDKIT_PROGRESS=plain docker build \
+autest-ubuntu2204: buildkit-logunlimited
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
@@ -48,13 +53,14 @@ deb-debian12: build-debian12
 	docker run --rm -v ./dist-debian12:/dist ats-debian12 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 
-build-debian12:
+build-debian12: buildkit-logunlimited
 	mkdir -p dist-debian12
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
-	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
-	        --target base \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
+		--target base \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -62,8 +68,9 @@ build-debian12:
 	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
-run-debian12:
-	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
+run-debian12: buildkit-logunlimited
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
 		--target setup_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
@@ -71,8 +78,9 @@ run-debian12:
 		-t ats-debian12 .
 	docker run --rm -it ats-debian12 bash
 
-autest-debian12:
-	BUILDKIT_PROGRESS=plain docker build ${DOCKER_NO_CACHE} \
+autest-debian12: buildkit-logunlimited
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
@@ -80,7 +88,14 @@ autest-debian12:
 		-t ats-debian12 .
 	docker run --rm -it ats-debian12 bash
 
+buildkit-logunlimited:
+	if ! docker buildx inspect logunlimited 2>/dev/null; then \
+		docker buildx create --bootstrap --name ${LOGUNLIMITED_BUILDER} \
+			--driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=-1 \
+			--driver-opt env.BUILDKIT_STEP_LOG_MAX_SPEED=-1; \
+	fi
+
 exec:
 	docker exec -it $$(docker ps -q) bash
 
-.PHONY: deb-debian12 run-debian12 build-debian12 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 exec
+.PHONY: deb-debian12 run-debian12 build-debian12 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 buildkit-logunlimited exec
