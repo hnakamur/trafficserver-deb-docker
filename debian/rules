@@ -14,23 +14,6 @@ export DH_VERBOSE = 1
 
 export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
 
-# The compiler and linker options below are copied from
-# https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html
-# and -Wtrampolines is removed since it is unsupported to clang.
-
-export MY_CFLAGS = -ffile-prefix-map=/src/trafficserver=. \
--O2 -Wall -Wformat=2 -Wconversion -Wimplicit-fallthrough \
--U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 \
--D_GLIBCXX_ASSERTIONS \
--fstrict-flex-arrays=3 \
--fstack-clash-protection -fstack-protector-strong \
--g \
--Wno-error=sign-conversion -Wno-error=string-conversion \
--Wno-error=implicit-int-conversion -Wno-error=shorten-64-to-32 \
--Wno-error=implicit-int-float-conversion
-
-export MY_LD_FLAGS = -Wl,-z,nodlopen -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now
-
 %:
 	LANG=C dh $@
 
@@ -39,11 +22,6 @@ override_dh_auto_configure:
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_CXX_COMPILER=clang++-16 \
 	-DCMAKE_C_COMPILER=clang-16 \
-	-DCMAKE_CXX_FLAGS="$(MY_CFLAGS)" \
-	-DCMAKE_C_FLAGS="$(MY_CFLAGS)" \
-	-DCMAKE_EXE_LINKER_FLAGS="$(MY_LD_FLAGS)" \
-	-DCMAKE_MODULE_LINKER_FLAGS="$(MY_LD_FLAGS)" \
-	-DCMAKE_SHARED_LINKER_FLAGS="$(MY_LD_FLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
 	-DCMAKE_INSTALL_BINDIR=bin \
 	-DCMAKE_INSTALL_SBINDIR=bin \
