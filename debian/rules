@@ -29,8 +29,7 @@ export MY_CFLAGS = -ffile-prefix-map=/src/trafficserver=. \
 -Wno-error=implicit-int-conversion -Wno-error=shorten-64-to-32 \
 -Wno-error=implicit-int-float-conversion
 
-export MY_LD_FLAGS = -Wl,-z,nodlopen -Wl,-z,noexecstack \
--Wl,-z,relro -Wl,-z,now
+export MY_LD_FLAGS = -Wl,-z,nodlopen -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now
 
 %:
 	LANG=C dh $@
