@@ -1,4 +1,4 @@
 var/cache/trafficserver
 var/log/trafficserver
-var/run/trafficserver
+tmp/run/trafficserver
 opt/trafficserver/var/cache

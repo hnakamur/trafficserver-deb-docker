@@ -1,2 +1,2 @@
 /var/log/trafficserver /opt/trafficserver/var/log
-/var/run/trafficserver /opt/trafficserver/var/run
+/tmp/run/trafficserver /opt/trafficserver/var/run
