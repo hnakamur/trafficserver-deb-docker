@@ -18,7 +18,7 @@ build-ubuntu2204: buildkit-logunlimited
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 	    --target base \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
@@ -29,7 +29,7 @@ build-ubuntu2204: buildkit-logunlimited
 	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
 run-ubuntu2204: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target setup_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
@@ -39,7 +39,7 @@ run-ubuntu2204: buildkit-logunlimited
 	docker run --rm -it ats-ubuntu2204 bash
 
 autest-ubuntu2204: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
@@ -58,7 +58,7 @@ build-debian12: buildkit-logunlimited
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target base \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
@@ -69,7 +69,7 @@ build-debian12: buildkit-logunlimited
 	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
 run-debian12: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target setup_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
@@ -79,7 +79,7 @@ run-debian12: buildkit-logunlimited
 	docker run --rm -it ats-debian12 bash
 
 autest-debian12: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
