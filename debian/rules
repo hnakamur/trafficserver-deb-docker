@@ -24,7 +24,10 @@ export MY_CFLAGS = -ffile-prefix-map=/src/trafficserver=. \
 -D_GLIBCXX_ASSERTIONS \
 -fstrict-flex-arrays=3 \
 -fstack-clash-protection -fstack-protector-strong \
--g
+-g \
+-Wno-error=sign-conversion -Wno-error=string-conversion \
+-Wno-error=implicit-int-conversion -Wno-error=shorten-64-to-32 \
+-Wno-error=implicit-int-float-conversion
 
 export MY_LD_FLAGS = -Wl,-z,nodlopen -Wl,-z,noexecstack \
 -Wl,-z,relro -Wl,-z,now
@@ -42,7 +45,6 @@ override_dh_auto_configure:
 	-DCMAKE_EXE_LINKER_FLAGS="$(MY_LD_FLAGS)" \
 	-DCMAKE_MODULE_LINKER_FLAGS="$(MY_LD_FLAGS)" \
 	-DCMAKE_SHARED_LINKER_FLAGS="$(MY_LD_FLAGS)" \
-	-DCMAKE_STATIC_LINKER_FLAGS="$(MY_LD_FLAGS)" \
 	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
 	-DCMAKE_INSTALL_BINDIR=bin \
 	-DCMAKE_INSTALL_SBINDIR=bin \
