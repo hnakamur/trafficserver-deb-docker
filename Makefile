@@ -1,5 +1,5 @@
 PKG_VERSION=10.0.0~20231202
-PKG_REL_PREFIX=1hn2
+PKG_REL_PREFIX=1hn3
 ifdef NO_CACHE
 DOCKER_NO_CACHE=--no-cache
 endif
@@ -11,6 +11,15 @@ deb-ubuntu2204: build-ubuntu2204
 	docker run --rm -v ./dist-ubuntu2204:/dist ats-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 
+clang-ubuntu2204: buildkit-logunlimited
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
+		${DOCKER_NO_CACHE} \
+	    --target setup_clang \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
+		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
+		-t ats-ubuntu2204 .
+
 build-ubuntu2204: buildkit-logunlimited
 	mkdir -p dist-ubuntu2204
 	(set -x; \
@@ -18,7 +27,7 @@ build-ubuntu2204: buildkit-logunlimited
 	git submodule status --recursive; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
-	    --target base \
+	    --target build_trafficserver \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -26,14 +35,7 @@ build-ubuntu2204: buildkit-logunlimited
 	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
-run-ubuntu2204: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target setup_autest \
-		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
-		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2204 .
+run-ubuntu2204:
 	docker run --rm -it ats-ubuntu2204 bash
 
 autest-ubuntu2204: buildkit-logunlimited
@@ -58,7 +60,7 @@ build-debian12: buildkit-logunlimited
 	git submodule status --recursive; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
-		--target base \
+		--target build_trafficserver \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
@@ -66,14 +68,7 @@ build-debian12: buildkit-logunlimited
 	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}_build.log
 
-run-debian12: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target setup_autest \
-		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
-		--build-arg PKG_REL_DISTRIB=debian12 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-debian12 .
+run-debian12:
 	docker run --rm -it ats-debian12 bash
 
 autest-debian12: buildkit-logunlimited
