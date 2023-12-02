@@ -89,6 +89,12 @@ configure)
 
 	# add config to set user_id to run traffic_server.
 	printf "\n# https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.yaml.en.html#management\n  admin:\n    user_id: ${USER}\n" >> /opt/trafficserver/etc/records.yaml
+
+	# run ldconfig if the config file was added
+	set -x
+	if [ -f /etc/ld.so.conf.d/trafficserver.conf ]; then
+		ldconfig
+	fi
 ;;
 
 abort-upgrade|abort-remove|abort-deconfigure)
