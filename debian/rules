@@ -15,9 +15,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=-all optimize=-lto
 
 export CXX=clang++-16
 export CC=clang-16
-# We set compile and link flags in CMakeLists.txt
-export CXXFLAGS=
-export LDFLAGS=
+# We add compile and link flags in CMakeLists.txt
+export CXXFLAGS=-flto
+export LDFLAGS=-flto
 
 export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
 
