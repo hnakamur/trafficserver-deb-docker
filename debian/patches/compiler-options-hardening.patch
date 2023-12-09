@@ -1,8 +1,6 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 69bfab1de..ed44eb7a8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -552,6 +552,8 @@ add_compile_options(-pipe -Wall -Wextra -Wno-unused-parameter)
+@@ -556,6 +556,8 @@
  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wno-noexcept-type;-Wsuggest-override>")
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation;-Wno-stringop-overflow>")
  
@@ -11,9 +9,6 @@ index 69bfab1de..ed44eb7a8 100644
  if(NOT EXTERNAL_YAML_CPP)
    include(subproject_version)
    subproject_version(YAML_CPP YAMLCPP_LIB_VERSION)
-diff --git a/cmake/hardening.cmake b/cmake/hardening.cmake
-new file mode 100644
-index 000000000..2b92b8bff
 --- /dev/null
 +++ b/cmake/hardening.cmake
 @@ -0,0 +1,29 @@
