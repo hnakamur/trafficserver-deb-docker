@@ -61,3 +61,4 @@ override_dh_dwz:
 
 override_dh_auto_install:
 	DESTDIR=./debian/tmp cmake --install $(BUILD_DIR)
+	install $$(find $(BUILD_DIR) -name '*.a') ./debian/tmp/opt/trafficserver/lib/
