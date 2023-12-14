@@ -174,7 +174,7 @@
 +}
 --- a/src/proxy/http/HttpTransactHeaders.cc
 +++ b/src/proxy/http/HttpTransactHeaders.cc
-@@ -1169,10 +1169,8 @@
+@@ -1168,10 +1168,8 @@
  }
  
  void
@@ -186,7 +186,7 @@
    if (normalize_ae) {
      MIMEField *ae_field = header->field_find(MIME_FIELD_ACCEPT_ENCODING, MIME_LEN_ACCEPT_ENCODING);
  
-@@ -1227,6 +1225,12 @@
+@@ -1226,6 +1224,12 @@
  }
  
  void
