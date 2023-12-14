@@ -1,2 +1,4 @@
 opt/trafficserver/lib/lib*.a
+opt/trafficserver/lib/cmake/
+opt/trafficserver/lib/pkgconfig/yaml-cpp.pc
 opt/trafficserver/include/

@@ -32,8 +32,8 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		-t ats-ubuntu2204 . \
-	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}.build.log
-	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}.build.log
+	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
+	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 
 run-ubuntu2204:
 	docker run --rm -it ats-ubuntu2204 bash
@@ -65,8 +65,8 @@ build-debian12: buildkit-logunlimited
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		-t ats-debian12 . \
-	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}.build.log
-	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}${PKG_REL_DISTRIB}.build.log
+	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
+	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 
 run-debian12:
 	docker run --rm -it ats-debian12 bash
