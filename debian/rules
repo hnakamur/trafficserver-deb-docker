@@ -66,6 +66,13 @@ override_dh_dwz:
 	# https://groups.google.com/g/linux.debian.devel/c/BdkfKzS8Z70
 	true
 
+override_dh_strip:
+	# skip dh_strip to avoid the following errors and warnings:
+	# readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+	# strip: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a(bw_format.cc.o): Unable to recognise the format of file: file format not recognized
+	# dh_strip: warning: lto-no-text-in-archive: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a
+	true
+
 override_dh_auto_install:
 	DESTDIR=./debian/tmp cmake --install $(LIBYAMLCPP_BUILD_DIR)
 	DESTDIR=./debian/tmp cmake --install $(BUILD_DIR)
