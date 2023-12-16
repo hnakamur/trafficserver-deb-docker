@@ -13,12 +13,6 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=-all optimize=-lto
 # package maintainers to append LDFLAGS
 # export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-export CXX=clang++-16
-export CC=clang-16
-# We add compile and link flags in CMakeLists.txt
-export CXXFLAGS=-flto
-export LDFLAGS=-flto
-
 export LIBYAMLCPP_BUILD_DIR = ./debian/yamlcpp-build-$(DEB_HOST_MULTIARCH)
 export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
 
@@ -26,12 +20,10 @@ export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
 	LANG=C dh $@
 
 override_dh_auto_configure:
-	CXX=$(CXX) CC=$(CC) CXXFLAGS=$(CXXFLAGS) LDFLAGS=$(LDFLAGS) \
 	cmake -B $(LIBYAMLCPP_BUILD_DIR) -S lib/yamlcpp -G Ninja \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
 	-DYAML_BUILD_SHARED_LIBS=OFF
-	CXX=$(CXX) CC=$(CC) CXXFLAGS=$(CXXFLAGS) LDFLAGS=$(LDFLAGS) \
 	cmake -B $(BUILD_DIR) -G Ninja \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
@@ -60,18 +52,6 @@ override_dh_auto_build:
 override_dh_auto_test:
 	cmake --build $(BUILD_DIR) --target test
 	# cmake --build $(BUILD_DIR) --target autest
-
-override_dh_dwz:
-	# skip dwz since it does not work well with clang >= 14.
-	# https://groups.google.com/g/linux.debian.devel/c/BdkfKzS8Z70
-	true
-
-override_dh_strip:
-	# skip dh_strip to avoid the following errors and warnings:
-	# readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
-	# strip: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a(bw_format.cc.o): Unable to recognise the format of file: file format not recognized
-	# dh_strip: warning: lto-no-text-in-archive: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a
-	true
 
 override_dh_auto_install:
 	DESTDIR=./debian/tmp cmake --install $(LIBYAMLCPP_BUILD_DIR)
