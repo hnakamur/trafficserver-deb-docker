@@ -41,24 +41,21 @@
    static void remove_100_continue_headers(HttpTransact::State *s, HTTPHdr *outgoing);
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -2880,6 +2880,17 @@
-    */
-   int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
- 
-+  /**
-+   * Normalize Accept Encoding request header.
-+   *
-+   * @param txnp the transaction pointer
-+   * @param request the client request header. If null, use the transactions client request.
-+   * @param normalize_ae Specifies normalization, if any, of Accept-Encoding: headers.
-+   *
-+   * @see https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.yaml.en.html
-+   */
-+  void TSHttpTxnNormalizeAcceptEncoding(TSHttpTxn txnp, TSMBuffer request, int normalize_ae);
+@@ -3110,3 +3110,14 @@
+  * Get entry count in parent.config.
+  */
+ int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
 +
- } // end namespace c
- 
- template <typename T>
++/**
++ * Normalize Accept Encoding request header.
++ *
++ * @param txnp the transaction pointer
++ * @param request the client request header. If null, use the transactions client request.
++ * @param normalize_ae Specifies normalization, if any, of Accept-Encoding: headers.
++ *
++ * @see https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.yaml.en.html
++ */
++void TSHttpTxnNormalizeAcceptEncoding(TSHttpTxn txnp, TSMBuffer request, int normalize_ae);
 --- /dev/null
 +++ b/plugins/lua/example/test_normalize_accept_encoding.lua
 @@ -0,0 +1,33 @@
@@ -149,13 +146,13 @@
  #include "proxy/PluginHttpConnect.h"
  #include "../iocore/net/P_Net.h"
  #include "../iocore/net/P_SSLNextProtocolAccept.h"
-@@ -9591,3 +9592,22 @@
+@@ -8850,3 +8851,22 @@
    return s->parent_params && s->parent_params->parent_table
      ? s->parent_params->parent_table->getEntryCount() : 0;
  }
 +
 +void
-+tsapi::c::TSHttpTxnNormalizeAcceptEncoding(TSHttpTxn txnp, TSMBuffer request, int normalize_ae)
++TSHttpTxnNormalizeAcceptEncoding(TSHttpTxn txnp, TSMBuffer request, int normalize_ae)
 +{
 +  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
 +  HttpSM *sm = (HttpSM *)txnp;
@@ -174,7 +171,7 @@
 +}
 --- a/src/proxy/http/HttpTransactHeaders.cc
 +++ b/src/proxy/http/HttpTransactHeaders.cc
-@@ -1168,10 +1168,8 @@
+@@ -1188,10 +1188,8 @@
  }
  
  void
@@ -186,7 +183,7 @@
    if (normalize_ae) {
      MIMEField *ae_field = header->field_find(MIME_FIELD_ACCEPT_ENCODING, MIME_LEN_ACCEPT_ENCODING);
  
-@@ -1226,6 +1224,12 @@
+@@ -1246,6 +1244,12 @@
  }
  
  void

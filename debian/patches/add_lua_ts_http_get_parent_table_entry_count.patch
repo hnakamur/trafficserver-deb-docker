@@ -1,17 +1,14 @@
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -2875,6 +2875,11 @@
-    */
-   TSTxnType TSHttpTxnTypeGet(TSHttpTxn txnp);
- 
-+  /*
-+   * Get entry count in parent.config.
-+   */
-+  int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
+@@ -3105,3 +3105,8 @@
+ {
+   return static_cast<std::remove_cv_t<T> *>(TSmalloc(count * sizeof(T)));
+ }
 +
- } // end namespace c
- 
- template <typename T>
++/*
++ * Get entry count in parent.config.
++ */
++int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
 --- a/plugins/lua/ts_lua_http.cc
 +++ b/plugins/lua/ts_lua_http.cc
 @@ -128,6 +128,8 @@
@@ -51,7 +48,7 @@
 +}
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -9579,3 +9579,15 @@
+@@ -8838,3 +8838,15 @@
    }
    return retval;
  }
@@ -60,7 +57,7 @@
 + * Get entry count in parent.config.
 + */
 +int
-+tsapi::c::TSHttpParentTableGetEntryCount(TSHttpTxn txnp)
++TSHttpParentTableGetEntryCount(TSHttpTxn txnp)
 +{
 +  HttpSM *sm             = reinterpret_cast<HttpSM *>(txnp);
 +  HttpTransact::State *s = &(sm->t_state);

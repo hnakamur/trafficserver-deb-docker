@@ -1,7 +1,7 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -576,6 +576,8 @@
- add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wno-noexcept-type;-Wsuggest-override>")
+@@ -571,6 +571,8 @@
+ add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wno-noexcept-type;-Wsuggest-override;-Wno-vla-extension>")
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation;-Wno-stringop-overflow>")
  
 +include(hardening)
