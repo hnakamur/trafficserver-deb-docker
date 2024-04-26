@@ -78,7 +78,7 @@ COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ /src/trafficserver/
 USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
 ARG PKG_VERSION
-RUN tar cf - trafficserver | xz -c --best > trafficserver_${PKG_VERSION}.orig.tar.xz
+RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 
 COPY --chown=build:build ./debian /src/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
