@@ -4,6 +4,8 @@ ifdef NO_CACHE
 DOCKER_NO_CACHE=--no-cache
 endif
 
+LUAJIT_DEB_VERSION=2.1.20240314-1hn1
+
 LOGUNLIMITED_BUILDER=logunlimited
 
 # Ubuntu 22.04
@@ -31,6 +33,8 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
 		-t ats-ubuntu2204 . \
 	) 2>&1 | tee dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 	xz --best --force dist-ubuntu2204/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
@@ -64,6 +68,8 @@ build-debian12: buildkit-logunlimited
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=debian12 \
 		-t ats-debian12 . \
 	) 2>&1 | tee dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 	xz --best --force dist-debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log

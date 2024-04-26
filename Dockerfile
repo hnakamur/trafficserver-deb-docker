@@ -46,7 +46,7 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
     libhwloc-dev libunwind8 libunwind-dev zlib1g-dev \
-    tcl-dev tcl8.6-dev libjemalloc-dev libluajit-5.1-dev liblzma-dev \
+    tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
     libmaxminddb-dev libjansson-dev libcjose-dev \
     # packages that autest needs
@@ -58,6 +58,12 @@ RUN set -x; if [ $(lsb_release -is) = "Debian" ]; then \
     fi
 
 RUN type cmake; cmake --version
+
+ARG LUAJIT_DEB_VERSION
+ARG LUAJIT_DEB_OS_ID
+RUN mkdir -p /depends
+RUN curl -sSL https://github.com/hnakamur/openresty-luajit-deb-docker/releases/download/${LUAJIT_DEB_VERSION}${LUAJIT_DEB_OS_ID}/openresty-luajit-${LUAJIT_DEB_VERSION}${LUAJIT_DEB_OS_ID}.tar.gz | tar zxf - -C /depends --strip-components=2
+RUN dpkg -i /depends/*.deb
 
 ARG SRC_DIR=/src
 ARG BUILD_USER=build
