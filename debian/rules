@@ -1,80 +1,94 @@
 #!/usr/bin/make -f
-# See debhelper(7) (uncomment to enable)
-# output every command that modifies files on the build system.
-export DH_VERBOSE = 1
+# -*- makefile -*-
 
-# see FEATURE AREAS in dpkg-buildflags(1)
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-export DEB_BUILD_MAINT_OPTIONS = hardening=-all optimize=-lto
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
 
-# see ENVIRONMENT in dpkg-buildflags(1)
-# package maintainers to append CFLAGS
-# export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-# package maintainers to append LDFLAGS
-# export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND = -O3
+export DEB_CXXFLAGS_MAINT_APPEND = -O3
+# mips & mipsel need explicit libatomic link
+ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),mips mipsel))
+  export DEB_LDFLAGS_MAINT_APPEND += -latomic
+endif
 
-export CXX=clang++-16
-export CC=clang-16
-# We add compile and link flags in CMakeLists.txt
-export CXXFLAGS=-flto
-export LDFLAGS=-flto
+# Get build architecture. ./configure is different on Linux
+include /usr/share/dpkg/architecture.mk
+# Get rid f dpkg-parsechangelog
+include /usr/share/dpkg/pkg-info.mk
 
-export LIBYAMLCPP_BUILD_DIR = ./debian/yamlcpp-build-$(DEB_HOST_MULTIARCH)
-export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)
+configure_flags = \
+	--enable-layout=opt \
+	--prefix=/opt/trafficserver \
+	--includedir=/usr/include \
+	--datarootdir=/usr/share \
+	--datadir=/usr/share \
+	--infodir=/usr/share/info \
+	--localedir=/usr/share/locale \
+	--mandir=/usr/share/man \
+	--docdir=/usr/share/doc/trafficserver \
+	--htmldir=/usr/share/doc/trafficserver \
+	--dvidir=/usr/share/doc/trafficserver \
+	--pdfdir=/usr/share/doc/trafficserver \
+	--psdir=/usr/share/doc/trafficserver \
+	--exec-prefix=/usr \
+	--sysconfdir=/opt/trafficserver/etc --libdir=/usr/lib/trafficserver \
+	--localstatedir=/opt/trafficserver/var \
+	--libexecdir=/usr/lib/trafficserver/modules \
+	--with-user=root --with-group=root --disable-silent-rules \
+	--enable-experimental-plugins --enable-32bit-build \
+	--with-build-version=$(DEB_VERSION) \
+	--with-brotli=/usr/include \
+	$(shell dpkg-buildflags --export=configure)
+
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+	configure_flags += --enable-wccp
+endif
 
 %:
-	LANG=C dh $@
+	dh $@ --with autoreconf
 
 override_dh_auto_configure:
-	CXX=$(CXX) CC=$(CC) CXXFLAGS=$(CXXFLAGS) LDFLAGS=$(LDFLAGS) \
-	cmake -B $(LIBYAMLCPP_BUILD_DIR) -S lib/yamlcpp -G Ninja \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
-	-DYAML_BUILD_SHARED_LIBS=OFF
-	CXX=$(CXX) CC=$(CC) CXXFLAGS=$(CXXFLAGS) LDFLAGS=$(LDFLAGS) \
-	cmake -B $(BUILD_DIR) -G Ninja \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_INSTALL_PREFIX=/opt/trafficserver \
-	-DCMAKE_INSTALL_BINDIR=bin \
-	-DCMAKE_INSTALL_SBINDIR=bin \
-	-DCMAKE_INSTALL_LIBDIR=lib \
-	-DCMAKE_INSTALL_LIBEXECDIR=lib/modules \
-	-DCMAKE_INSTALL_SYSCONFDIR=etc \
-	-DCMAKE_INSTALL_LOCALSTATEDIR=var \
-	-DCMAKE_INSTALL_RUNSTATEDIR=var/run \
-	-DCMAKE_INSTALL_DATAROOTDIR=share \
-	-DCMAKE_INSTALL_DATADIR=share/data \
-	-DCMAKE_INSTALL_DOCDIR=share/doc \
-	-DCMAKE_INSTALL_LOGDIR=var/log \
-	-DCMAKE_INSTALL_CACHEDIR=var/cache \
-	-DBUILD_EXPERIMENTAL_PLUGINS=ON \
-	-DENABLE_MAXMIND_ACL=ON \
-	-DENABLE_URI_SIGNING=ON \
-	-DENABLE_JEMALLOC=ON \
-	-DENABLE_AUTEST=ON
-
-override_dh_auto_build:
-	cmake --build $(LIBYAMLCPP_BUILD_DIR) --parallel --verbose
-	cmake --build $(BUILD_DIR) --parallel --verbose
-
-override_dh_auto_test:
-	# cmake --build $(BUILD_DIR) --target test
-	# cmake --build $(BUILD_DIR) --target autest
-
-override_dh_dwz:
-	# skip dwz since it does not work well with clang >= 14.
-	# https://groups.google.com/g/linux.debian.devel/c/BdkfKzS8Z70
-	true
-
-override_dh_strip:
-	# skip dh_strip to avoid the following errors and warnings:
-	# readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
-	# strip: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a(bw_format.cc.o): Unable to recognise the format of file: file format not recognized
-	# dh_strip: warning: lto-no-text-in-archive: debian/trafficserver-dev/opt/trafficserver/lib/libswoc-static-1.5.5.a
-	true
+	dh_auto_configure -- $(configure_flags)
 
 override_dh_auto_install:
-	DESTDIR=./debian/tmp cmake --install $(LIBYAMLCPP_BUILD_DIR)
-	DESTDIR=./debian/tmp cmake --install $(BUILD_DIR)
-	install $$(find $(LIBYAMLCPP_BUILD_DIR) -name '*.a') ./debian/tmp/opt/trafficserver/lib/
-	install $$(find $(BUILD_DIR) -name '*.a') ./debian/tmp/opt/trafficserver/lib/
+	dh_auto_install -- INSTALLDIRS=vendor
+	rm -f debian/tmp/usr/bin/trafficserver # We install our own
+	# Satisfy §10.2 (http://wiki.debian.org/ReleaseGoals/LAFileRemoval)
+	rm -f debian/tmp/usr/lib/trafficserver/lib*.la
+	rm -f debian/tmp/usr/lib/trafficserver/modules/*.la
+	rm -f debian/tmp/usr/lib/trafficserver/lib*.a
+	rm -f debian/tmp/usr/lib/trafficserver/plugin_*.la
+	rm -f debian/tmp/usr/lib/trafficserver/plugin_*.so
+	rm -rf debian/tmp/opt/trafficserver/man
+ifneq ($(DEB_HOST_ARCH_OS),linux)
+	# Remove Linux-specific plugin
+	sed -i '/\/healthchecks\.so$$/d' \
+		debian/trafficserver.install
+endif
+
+override_dh_install:
+	dh_install
+	dh_missing --list-missing
+	./debian/change_config.pl debian/trafficserver/opt/trafficserver/etc/records.config
+	# Lintian fixes
+	mkdir -p debian/trafficserver/usr/share/doc/trafficserver
+	cat CHANGELOG-* >> debian/trafficserver/usr/share/doc/trafficserver/changelog
+	#rm debian/trafficserver-dev/usr/share/doc/trafficserver-dev/examples/ssl-preaccept/ssl_preaccept.config
+	#(cd debian/trafficserver-dev/usr/share/doc/trafficserver-dev/examples/ssl-preaccept/; \
+	#ln -s ssl_preaccept.config ssl_sni.config)
+
+override_dh_fixperms:
+	dh_fixperms -Xvar/lib/trafficserver \
+		    -Xvar/log/trafficserver \
+		    -Xvar/cache/trafficserver \
+		    -Xvar/run/trafficserver
+
+override_dh_installexamples:
+	dh_installexamples -XMakefile -X.libs -X.dirstamp -X.deps -X.la -X.lo
+
+override_dh_makeshlibs:
+	dh_makeshlibs -Xdebian/tmp/usr/lib/trafficserver
+
+override_dh_auto_test:
+	-dh_auto_test

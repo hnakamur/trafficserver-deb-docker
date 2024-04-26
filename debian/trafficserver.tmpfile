@@ -1,1 +1,1 @@
-d /tmp/run/trafficserver 0755 trafficserver trafficserver
+d /run/trafficserver 0755 trafficserver trafficserver

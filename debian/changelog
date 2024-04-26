@@ -1,11 +1,5 @@
-trafficserver (10.0.0~20240426-1hn1DebRelDistrib) DebRelCodename; urgency=medium
-
-  * Upstream new commit
-
- -- Hiroaki Nakamura <hnakamur@gmail.com>  Fri, 26 Apr 2024 16:39:38 +0900
-
-trafficserver (10.0.0~20240112-1hn1DebRelDistrib) DebRelCodename; urgency=medium
+trafficserver (9.2.4-1hn1DebRelDistrib) DebRelCodename; urgency=medium
 
   * Initial release
 
- -- Hiroaki Nakamura <hnakamur@gmail.com>  Sun, 14 Jan 2024 11:14:46 +0900
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Fri, 26 Apr 2024 18:04:24 +0900

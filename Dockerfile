@@ -1,37 +1,12 @@
 # syntax=docker/dockerfile:1
 ARG OS_TYPE=ubuntu
 ARG OS_VERSION=22.04
-FROM ${OS_TYPE}:${OS_VERSION} as setup_clang
-
-# setup clang
-ARG LLVM_MAJOR_VERSION=16
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install curl lsb-release dpkg && \
-    mkdir -p /etc/apt/keyrings && \
-    apt_key_path=/etc/apt/keyrings/apt.llvm.org.asc; \
-    curl -sS -o $apt_key_path https://apt.llvm.org/llvm-snapshot.gpg.key && \
-    arch=$(dpkg --print-architecture); \
-    codename=$(lsb_release -sc); \
-    cat <<EOF > /etc/apt/sources.list.d/llvm-${LLVM_MAJOR_VERSION}.list
-deb [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
-deb-src [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
-EOF
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install clang-${LLVM_MAJOR_VERSION}
-
-# setup cmake
-ARG CMAKE_VERSION=3.27.9
-RUN arch=$(arch); \
-    download_url=https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${arch}.tar.gz; \
-    curl -sSL "$download_url" | tar zxf - -C /usr/local/ && \
-    (cd /usr/local/bin; ln -s ../cmake-${CMAKE_VERSION}-linux-${arch}/bin/* .)
-
-FROM setup_clang as build_trafficserver
+FROM ${OS_TYPE}:${OS_VERSION} as build_trafficserver
 
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata apt-utils && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install curl tzdata apt-utils && \
     # Compilers
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache pkgconf bison flex gettext libc++-dev \
@@ -49,6 +24,9 @@ RUN apt-get update && \
     tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
     libmaxminddb-dev libjansson-dev libcjose-dev \
+    graphviz libboost-dev default-libmysqlclient-dev python3-sphinx plantuml \
+    python3-sphinxcontrib.plantuml libcurl4-openssl-dev libkyotocabinet-dev \
+    libmemcached-dev libcrypto++-dev \
     # packages that autest needs
     python3 python3-pip python3-virtualenv \
     python3-gunicorn python3-requests python3-httpbin

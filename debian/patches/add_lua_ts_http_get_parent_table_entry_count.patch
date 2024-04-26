@@ -1,16 +1,19 @@
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -3105,3 +3105,8 @@
- {
-   return static_cast<std::remove_cv_t<T> *>(TSmalloc(count * sizeof(T)));
- }
-+
+@@ -2761,6 +2761,11 @@
+ tsapi bool TSHttpTxnCntlGet(TSHttpTxn txnp, TSHttpCntlType ctrl);
+ tsapi TSReturnCode TSHttpTxnCntlSet(TSHttpTxn txnp, TSHttpCntlType ctrl, bool data);
+ 
 +/*
 + * Get entry count in parent.config.
 + */
-+int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
---- a/plugins/lua/ts_lua_http.cc
-+++ b/plugins/lua/ts_lua_http.cc
++tsapi int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
++
+ #ifdef __cplusplus
+ }
+ #endif /* __cplusplus */
+--- a/plugins/lua/ts_lua_http.c
++++ b/plugins/lua/ts_lua_http.c
 @@ -128,6 +128,8 @@
  static int ts_lua_http_req_transform_set_downstream_watermark_bytes(lua_State *L);
  static int ts_lua_http_req_transform_set_upstream_bytes(lua_State *L);
@@ -46,17 +49,17 @@
 +  lua_pushinteger(L, (lua_Integer)count);
 +  return 1;
 +}
---- a/src/api/InkAPI.cc
-+++ b/src/api/InkAPI.cc
-@@ -8838,3 +8838,15 @@
-   }
-   return retval;
+--- a/src/traffic_server/InkAPI.cc
++++ b/src/traffic_server/InkAPI.cc
+@@ -10430,3 +10430,15 @@
+   HttpSM *sm = (HttpSM *)txnp;
+   return (TSIOBufferReader)sm->get_postbuf_clone_reader();
  }
 +
 +/*
 + * Get entry count in parent.config.
 + */
-+int
++tsapi int
 +TSHttpParentTableGetEntryCount(TSHttpTxn txnp)
 +{
 +  HttpSM *sm             = reinterpret_cast<HttpSM *>(txnp);

@@ -1,21 +1,8 @@
-diff --git a/include/proxy/logging/LogField.h b/include/proxy/logging/LogField.h
-index 0498b3f97..249402d28 100644
---- a/include/proxy/logging/LogField.h
-+++ b/include/proxy/logging/LogField.h
-@@ -32,7 +32,7 @@
- #include "proxy/logging/LogFieldAliasMap.h"
- #include "proxy/Milestones.h"
- 
--enum LogEscapeType { LOG_ESCAPE_NONE, LOG_ESCAPE_JSON };
-+enum LogEscapeType { LOG_ESCAPE_NONE, LOG_ESCAPE_JSON, LOG_ESCAPE_LTSV };
- 
- class LogAccess;
- 
-diff --git a/src/proxy/logging/LogAccess.cc b/src/proxy/logging/LogAccess.cc
-index a1cd9222c..f052d6be9 100644
---- a/src/proxy/logging/LogAccess.cc
-+++ b/src/proxy/logging/LogAccess.cc
-@@ -741,6 +741,74 @@ unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice)
+diff --git a/proxy/logging/LogAccess.cc b/proxy/logging/LogAccess.cc
+index eee6eb919..1ddb8454d 100644
+--- a/proxy/logging/LogAccess.cc
++++ b/proxy/logging/LogAccess.cc
+@@ -778,6 +778,74 @@ LogAccess::unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice)
    return -1;
  }
  
@@ -54,7 +41,7 @@ index a1cd9222c..f052d6be9 100644
 +}
 +
 +int
-+unmarshal_str_ltsv(char **buf, char *dest, int len, LogSlice *slice)
++LogAccess::unmarshal_str_ltsv(char **buf, char *dest, int len, LogSlice *slice)
 +{
 +  Debug("log-escape", "unmarshal_str_ltsv start, len=%d, slice=%p", len, slice);
 +
@@ -87,23 +74,98 @@ index a1cd9222c..f052d6be9 100644
 +  return -1;
 +}
 +
- } // end anonymous namespace
+ int
+ LogAccess::unmarshal_ttmsf(char **buf, char *dest, int len)
+ {
+@@ -976,6 +1044,34 @@ LogAccess::unmarshal_http_text_json(char **buf, char *dest, int len, LogSlice *s
+   return res1 + res2 + res3 + 2;
+ }
  
- /*-------------------------------------------------------------------------
-@@ -762,6 +830,9 @@ LogAccess::unmarshal_str(char **buf, char *dest, int len, LogSlice *slice, LogEs
-   if (LOG_ESCAPE_JSON == escape_type) {
-     return unmarshal_str_json(buf, dest, len, slice);
-   }
-+  if (LOG_ESCAPE_LTSV == escape_type) {
-+    return unmarshal_str_ltsv(buf, dest, len, slice);
++int
++LogAccess::unmarshal_http_text_ltsv(char **buf, char *dest, int len, LogSlice *slice)
++{
++  ink_assert(buf != nullptr);
++  ink_assert(*buf != nullptr);
++  ink_assert(dest != nullptr);
++
++  char *p = dest;
++
++  int res1 = unmarshal_str_ltsv(buf, p, len);
++  if (res1 < 0) {
++    return -1;
 +  }
++  p += res1;
++  *p++     = ' ';
++  int res2 = unmarshal_str_ltsv(buf, p, len - res1 - 1, slice);
++  if (res2 < 0) {
++    return -1;
++  }
++  p += res2;
++  *p++     = ' ';
++  int res3 = unmarshal_http_version(buf, p, len - res1 - res2 - 2);
++  if (res3 < 0) {
++    return -1;
++  }
++  return res1 + res2 + res3 + 2;
++}
++
+ /*-------------------------------------------------------------------------
+   LogAccess::unmarshal_http_status
  
-   char *val_buf = *buf;
-   int val_len   = static_cast<int>(::strlen(val_buf));
-diff --git a/src/proxy/logging/YamlLogConfigDecoders.cc b/src/proxy/logging/YamlLogConfigDecoders.cc
-index f414e6625..edcbe3b63 100644
---- a/src/proxy/logging/YamlLogConfigDecoders.cc
-+++ b/src/proxy/logging/YamlLogConfigDecoders.cc
+diff --git a/proxy/logging/LogAccess.h b/proxy/logging/LogAccess.h
+index db799131c..0efddf4a8 100644
+--- a/proxy/logging/LogAccess.h
++++ b/proxy/logging/LogAccess.h
+@@ -306,6 +306,7 @@ public:
+   static int unmarshal_int_to_str_hex(char **buf, char *dest, int len);
+   static int unmarshal_str(char **buf, char *dest, int len, LogSlice *slice = nullptr);
+   static int unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice = nullptr);
++  static int unmarshal_str_ltsv(char **buf, char *dest, int len, LogSlice *slice = nullptr);
+   static int unmarshal_ttmsf(char **buf, char *dest, int len);
+   static int unmarshal_int_to_date_str(char **buf, char *dest, int len);
+   static int unmarshal_int_to_time_str(char **buf, char *dest, int len);
+@@ -313,6 +314,7 @@ public:
+   static int unmarshal_http_version(char **buf, char *dest, int len);
+   static int unmarshal_http_text(char **buf, char *dest, int len, LogSlice *slice = nullptr);
+   static int unmarshal_http_text_json(char **buf, char *dest, int len, LogSlice *slice = nullptr);
++  static int unmarshal_http_text_ltsv(char **buf, char *dest, int len, LogSlice *slice = nullptr);
+   static int unmarshal_http_status(char **buf, char *dest, int len);
+   static int unmarshal_ip(char **buf, IpEndpoint *dest);
+   static int unmarshal_ip_to_str(char **buf, char *dest, int len);
+diff --git a/proxy/logging/LogField.cc b/proxy/logging/LogField.cc
+index 0a396ed29..48f2f343f 100644
+--- a/proxy/logging/LogField.cc
++++ b/proxy/logging/LogField.cc
+@@ -604,6 +604,12 @@ LogField::unmarshal(char **buf, char *dest, int len, LogEscapeType escape_type)
+         } else if (m_unmarshal_func == reinterpret_cast<UnmarshalFunc>(LogAccess::unmarshal_http_text)) {
+           func = reinterpret_cast<UnmarshalFuncWithSlice>(LogAccess::unmarshal_http_text_json);
+         }
++      } else if (escape_type == LOG_ESCAPE_LTSV) {
++        if (m_unmarshal_func == reinterpret_cast<UnmarshalFunc>(LogAccess::unmarshal_str)) {
++          func = reinterpret_cast<UnmarshalFuncWithSlice>(LogAccess::unmarshal_str_ltsv);
++        } else if (m_unmarshal_func == reinterpret_cast<UnmarshalFunc>(LogAccess::unmarshal_http_text)) {
++          func = reinterpret_cast<UnmarshalFuncWithSlice>(LogAccess::unmarshal_http_text_ltsv);
++        }
+       }
+       return (*func)(buf, dest, len, &m_slice);
+     }
+diff --git a/proxy/logging/LogField.h b/proxy/logging/LogField.h
+index 3d6b1348a..ea225f5a2 100644
+--- a/proxy/logging/LogField.h
++++ b/proxy/logging/LogField.h
+@@ -32,7 +32,7 @@
+ #include "LogFieldAliasMap.h"
+ #include "Milestones.h"
+ 
+-enum LogEscapeType { LOG_ESCAPE_NONE, LOG_ESCAPE_JSON };
++enum LogEscapeType { LOG_ESCAPE_NONE, LOG_ESCAPE_JSON, LOG_ESCAPE_LTSV };
+ 
+ class LogAccess;
+ 
+diff --git a/proxy/logging/YamlLogConfigDecoders.cc b/proxy/logging/YamlLogConfigDecoders.cc
+index 328f2752a..ba7cef930 100644
+--- a/proxy/logging/YamlLogConfigDecoders.cc
++++ b/proxy/logging/YamlLogConfigDecoders.cc
 @@ -75,6 +75,8 @@ convert<std::unique_ptr<LogFormat>>::decode(const Node &node, std::unique_ptr<Lo
      std::string escape = node["escape"].as<std::string>();
      if (!strncasecmp(escape.c_str(), "json", 4)) {
@@ -113,159 +175,3 @@ index f414e6625..edcbe3b63 100644
      } else if (!strncasecmp(escape.c_str(), "none", 4)) {
        escape_type = LOG_ESCAPE_NONE;
      } else {
-diff --git a/tests/gold_tests/logging/gold/field-ltsv-test.gold b/tests/gold_tests/logging/gold/field-ltsv-test.gold
-new file mode 100644
-index 000000000..7a1a1b2e2
---- /dev/null
-+++ b/tests/gold_tests/logging/gold/field-ltsv-test.gold
-@@ -0,0 +1,6 @@
-+foo:ab\td/ef	foo-slice:\td
-+foo:-	foo-slice:
-+foo:-	foo-slice:
-+foo:abd/ef	foo-slice:d
-+foo:ab	foo-slice:
-+foo:ab\\d/ef	foo-slice:\\d
-diff --git a/tests/gold_tests/logging/log-field-ltsv.test.py b/tests/gold_tests/logging/log-field-ltsv.test.py
-new file mode 100644
-index 000000000..c1c4efd12
---- /dev/null
-+++ b/tests/gold_tests/logging/log-field-ltsv.test.py
-@@ -0,0 +1,138 @@
-+'''
-+'''
-+#  Licensed to the Apache Software Foundation (ASF) under one
-+#  or more contributor license agreements.  See the NOTICE file
-+#  distributed with this work for additional information
-+#  regarding copyright ownership.  The ASF licenses this file
-+#  to you under the Apache License, Version 2.0 (the
-+#  "License"); you may not use this file except in compliance
-+#  with the License.  You may obtain a copy of the License at
-+#
-+#      http://www.apache.org/licenses/LICENSE-2.0
-+#
-+#  Unless required by applicable law or agreed to in writing, software
-+#  distributed under the License is distributed on an "AS IS" BASIS,
-+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+#  See the License for the specific language governing permissions and
-+#  limitations under the License.
-+
-+import os
-+
-+Test.Summary = '''
-+Test log fields.
-+'''
-+
-+ts = Test.MakeATSProcess("ts", enable_cache=False)
-+server = Test.MakeOriginServer("server")
-+
-+request_header = {'timestamp': 100, "headers": "GET /test-1 HTTP/1.1\r\nHost: test-1\r\n\r\n", "body": ""}
-+response_header = {
-+    'timestamp': 100,
-+    "headers": "HTTP/1.1 200 OK\r\nTest: 1\r\nContent-Type: application/json\r\nConnection: close\r\nContent-Type: application/json\r\n\r\n",
-+    "body": "Test 1"}
-+server.addResponse("sessionlog.json", request_header, response_header)
-+server.addResponse("sessionlog.json",
-+                   {'timestamp': 101,
-+                    "headers": "GET /test-2 HTTP/1.1\r\nHost: test-2\r\n\r\n",
-+                    "body": ""},
-+                   {'timestamp': 101,
-+                       "headers": "HTTP/1.1 200 OK\r\nTest: 2\r\nContent-Type: application/jason\r\nConnection: close\r\nContent-Type: application/json\r\n\r\n",
-+                       "body": "Test 2"})
-+server.addResponse("sessionlog.json",
-+                   {'timestamp': 102,
-+                    "headers": "GET /test-3 HTTP/1.1\r\nHost: test-3\r\n\r\n",
-+                    "body": ""},
-+                   {'timestamp': 102,
-+                       "headers": "HTTP/1.1 200 OK\r\nTest: 3\r\nConnection: close\r\nContent-Type: application/json\r\n\r\n",
-+                       "body": "Test 3"})
-+server.addResponse("sessionlog.json",
-+                   {'timestamp': 105,
-+                    "headers": "GET /test-5 HTTP/1.1\r\nHost: test-5\r\n\r\n",
-+                    "body": ""},
-+                   {'timestamp': 105,
-+                       "headers": "HTTP/1.1 200 OK\r\nTest: 5\r\nConnection: close\r\nContent-Type: application/json\r\n\r\n",
-+                       "body": "Test 5"})
-+server.addResponse("sessionlog.json",
-+                   {'timestamp': 106,
-+                    "headers": "GET /test-6 HTTP/1.1\r\nHost: test-6\r\n\r\n",
-+                    "body": ""},
-+                   {'timestamp': 106,
-+                       "headers": "HTTP/1.1 200 OK\r\nTest: 6\r\nConnection: close\r\nContent-Type: application/json\r\n\r\n",
-+                       "body": "Test 6"})
-+
-+nameserver = Test.MakeDNServer("dns", default='127.0.0.1')
-+
-+ts.Disk.records_config.update({
-+    'proxy.config.net.connections_throttle': 100,
-+    'proxy.config.dns.nameservers': f"127.0.0.1:{nameserver.Variables.Port}",
-+    'proxy.config.dns.resolv_conf': 'NULL'
-+})
-+# setup some config file for this server
-+ts.Disk.remap_config.AddLine(
-+    'map / http://localhost:{}/'.format(server.Variables.Port)
-+)
-+
-+ts.Disk.logging_yaml.AddLines(
-+    '''
-+logging:
-+  formats:
-+    - name: custom
-+      escape: ltsv
-+      format: 'foo:%<{Foo}cqh>\tfoo-slice:%<{Foo}cqh[2:-3]>'
-+  logs:
-+    - filename: field-ltsv-test
-+      format: custom
-+'''.split("\n")
-+)
-+
-+# #########################################################################
-+# at the end of the different test run a custom log file should exist
-+# Because of this we expect the testruns to pass the real test is if the
-+# customlog file exists and passes the format check
-+Test.Disk.File(os.path.join(ts.Variables.LOGDIR, 'field-ltsv-test.log'),
-+               exists=True, content='gold/field-ltsv-test.gold')
-+
-+# first test is a miss for default
-+tr = Test.AddTestRun()
-+# Wait for the micro server
-+tr.Processes.Default.StartBefore(server)
-+tr.Processes.Default.StartBefore(nameserver)
-+# Delay on readiness of our ssl ports
-+tr.Processes.Default.StartBefore(Test.Processes.ts)
-+
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-1" --header "Foo: ab\td/ef" http://localhost:{0}/test-1' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+tr = Test.AddTestRun()
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-2" --header "Foo: ab\x1fd/ef" http://localhost:{0}/test-2' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+tr = Test.AddTestRun()
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-3" --header "Foo: abc\x7fde" http://localhost:{0}/test-3' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+tr = Test.AddTestRun()
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-2" --header "Foo: ab\x80d/ef" http://localhost:{0}/test-4' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+tr = Test.AddTestRun()
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-5" --header "Foo: ab\nd/ef" http://localhost:{0}/test-5' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+tr = Test.AddTestRun()
-+tr.Processes.Default.Command = 'curl --verbose --header "Host: test-6" --header "Foo: ab\\d/ef" http://localhost:{0}/test-6' .format(
-+    ts.Variables.port)
-+tr.Processes.Default.ReturnCode = 0
-+
-+# Wait for log file to appear, then wait one extra second to make sure TS is done writing it.
-+test_run = Test.AddTestRun()
-+test_run.Processes.Default.Command = (
-+    os.path.join(Test.Variables.AtsTestToolsDir, 'condwait') + ' 60 1 -f ' +
-+    os.path.join(ts.Variables.LOGDIR, 'field-ltsv-test.log')
-+)
-+test_run.Processes.Default.ReturnCode = 0

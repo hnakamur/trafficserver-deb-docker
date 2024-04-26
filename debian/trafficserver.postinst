@@ -52,7 +52,7 @@ configure)
 		--system \
 		--disabled-password \
 		--no-create-home \
-		--gecos "Apache Traffic Server user" \
+		--gecos "Debian Traffic Server user" \
 		$USER
 	fi
 
@@ -84,17 +84,37 @@ configure)
 				dpkg-statoverride --update --add "$USER" adm 0750 /var/cache/trafficserver
 			fi
 		fi
-
 	fi
 
-	# add config to set user_id to run traffic_server.
-	printf "\n# https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.yaml.en.html#management\n  admin:\n    user_id: ${USER}\n" >> /opt/trafficserver/etc/records.yaml
+        if [ -n "$2" ] && dpkg --compare-versions "$2" 'le' '3.2~' ; then
+                RET=0
+                invoke-rc.d trafficserver status > /dev/null 2>&1 || RET=$?
+                # 0 => ATS is running
+                # 4 => Status is unknown
+                # 1,2,3 => ATS is not running
 
-	# run ldconfig if the config file was added
-	set -x
-	if [ -f /etc/ld.so.conf.d/trafficserver.conf ]; then
-		ldconfig
-	fi
+                # using /bin/echo to make sure -e is supported
+                ECHO=`which echo`
+                if [ "$RET" -gt 0 ] && [ "$RET" -ne 4 ] && [ -f /var/cache/trafficserver/host.db ] ; then
+                        echo "Purging TrafficServer cache upon upgrade."
+                        RET=0
+                        traffic_server -Cclear > /dev/null 2>&1 || RET=$?
+                        if [ "$RET" -ne 0 ] ; then
+                                $ECHO "======================================================================="
+                                $ECHO -e "WARNING: Apache TrafficServer's cache couldn't be purged during the upgrade.\n" \
+                                        "Please inspect the situation manually and call 'traffic_server -Cclear'\n" \
+                                        "afterwards to purge the caches."
+                                $ECHO "======================================================================="
+                        fi
+                else
+                    $ECHO "======================================================================="
+                    $ECHO -e "WARNING: Apache TrafficServer is not running or its state couldn't be\n" \
+                        "determined. Please inspect the situation manually and call\n" \
+                        "'traffic_server -Cclear' afterwards to purge the caches.\n"
+                    $ECHO "======================================================================="
+
+               fi
+        fi
 ;;
 
 abort-upgrade|abort-remove|abort-deconfigure)

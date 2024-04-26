@@ -1,4 +1,7 @@
+0001-Use-mcx16-on-x86-platforms-only.patch
+0003-reproductible-build.patch
+0006-fix-doc-build.patch
+0013-fix-perl-interpreter-path.patch
+0015-fix-via-response-header-order.patch
 add_lua_ts_http_get_parent_table_entry_count.patch
 ltsv_escape_for_access_log.patch
-compiler-options-hardening.patch
-tsapi_normalize_accept_encoding.patch

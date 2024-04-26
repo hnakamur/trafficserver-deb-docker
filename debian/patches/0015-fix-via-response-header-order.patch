@@ -1,0 +1,57 @@
+Description: Fix ordering Via response header values
+Author: Hiroaki Nakamura <hnakamur@gmail.com>
+Origin: other, https://github.com/apache/trafficserver/pull/9239/files
+Last-Update: 2023-01-24
+---
+--- a/proxy/http/HttpTransact.cc
++++ b/proxy/http/HttpTransact.cc
+@@ -4697,11 +4697,17 @@
+     //  the order of the fields
+     MIMEField *resp_via = s->hdr_info.server_response.field_find(MIME_FIELD_VIA, MIME_LEN_VIA);
+     if (resp_via) {
++      int saved_via_len = 0;
++      ts::LocalBufferWriter<HTTP_OUR_VIA_MAX_LENGTH> saved_via_w;
+       MIMEField *our_via;
+       our_via = s->hdr_info.client_response.field_find(MIME_FIELD_VIA, MIME_LEN_VIA);
+       if (our_via == nullptr) {
+         our_via = s->hdr_info.client_response.field_create(MIME_FIELD_VIA, MIME_LEN_VIA);
+         s->hdr_info.client_response.field_attach(our_via);
++      } else {
++        const char *src = our_via->value_get(&saved_via_len);
++        saved_via_w.write(src, saved_via_len);
++        s->hdr_info.client_response.field_value_set(our_via, "", 0, true);
+       }
+       // HDR FIX ME - Multiple appends are VERY slow
+       while (resp_via) {
+@@ -4710,6 +4716,9 @@
+         s->hdr_info.client_response.field_value_append(our_via, cfield, clen, true);
+         resp_via = resp_via->m_next_dup;
+       }
++      if (saved_via_w.size()) {
++        s->hdr_info.client_response.field_value_append(our_via, saved_via_w.data(), saved_via_w.size(), true);
++      }
+     }
+     // a warning text is added only in the case of a NOT MODIFIED response
+     if (warn_text) {
+--- a/proxy/http/HttpTransact.h
++++ b/proxy/http/HttpTransact.h
+@@ -44,6 +44,8 @@
+ #include "ProxySession.h"
+ #include "MgmtDefs.h"
+ 
++#define HTTP_OUR_VIA_MAX_LENGTH 1024 // 512-bytes for hostname+via string, 512-bytes for the debug info
++
+ #define HTTP_RELEASE_ASSERT(X) ink_release_assert(X)
+ 
+ #define DUMP_HEADER(T, H, I, S)                                 \
+--- a/proxy/http/HttpTransactHeaders.cc
++++ b/proxy/http/HttpTransactHeaders.cc
+@@ -837,7 +837,7 @@
+ void
+ HttpTransactHeaders::insert_via_header_in_response(HttpTransact::State *s, HTTPHdr *header)
+ {
+-  char new_via_string[1024]; // 512-bytes for hostname+via string, 512-bytes for the debug info
++  char new_via_string[HTTP_OUR_VIA_MAX_LENGTH];
+   char *via_string = new_via_string;
+   char *via_limit  = via_string + sizeof(new_via_string);
+ 

@@ -23,9 +23,9 @@ After=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=-/etc/default/trafficserver
-PIDFile=/run/trafficserver/server.lock
-ExecStart=/opt/trafficserver/bin/traffic_server $TS_DAEMON_ARGS
-ExecReload=/opt/trafficserver/bin/traffic_ctl config reload
+PIDFile=/run/trafficserver/manager.lock
+ExecStart=/usr/bin/traffic_manager $TM_DAEMON_ARGS
+ExecReload=/usr/bin/traffic_ctl config reload
 
 [Install]
 WantedBy=multi-user.target

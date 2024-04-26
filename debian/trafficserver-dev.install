@@ -1,5 +1,4 @@
-opt/trafficserver/lib/lib*.a
-opt/trafficserver/lib/cmake/
-opt/trafficserver/lib/pkgconfig/ts.pc
-opt/trafficserver/lib/pkgconfig/yaml-cpp.pc
-opt/trafficserver/include/
+debian/tmp/usr/include/*
+debian/tmp/usr/bin/tsxs
+debian/tmp/usr/lib/trafficserver/lib*.so
+debian/tmp/usr/lib/trafficserver/pkgconfig/trafficserver.pc
