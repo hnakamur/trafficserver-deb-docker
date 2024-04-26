@@ -17,6 +17,7 @@ opt/trafficserver/lib/modules/header_rewrite.so
 opt/trafficserver/lib/modules/healthchecks.so
 opt/trafficserver/lib/modules/ja3_fingerprint.so
 opt/trafficserver/lib/modules/libloader.so
+opt/trafficserver/lib/modules/magick.so
 opt/trafficserver/lib/modules/multiplexer.so
 opt/trafficserver/lib/modules/prefetch.so
 opt/trafficserver/lib/modules/regex_remap.so
@@ -26,9 +27,12 @@ opt/trafficserver/lib/modules/remap_stats.so
 opt/trafficserver/lib/modules/s3_auth.so
 opt/trafficserver/lib/modules/server_push_preload.so
 opt/trafficserver/lib/modules/slice.so
+opt/trafficserver/lib/modules/stale_response.so
 opt/trafficserver/lib/modules/statichit.so
 opt/trafficserver/lib/modules/stats_over_http.so
 opt/trafficserver/lib/modules/tcpinfo.so
 opt/trafficserver/lib/modules/traffic_dump.so
 opt/trafficserver/lib/modules/tslua.so
+opt/trafficserver/lib/modules/txn_box.so
+opt/trafficserver/lib/modules/webp_transform.so
 opt/trafficserver/lib/modules/xdebug.so
