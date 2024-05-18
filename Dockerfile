@@ -7,8 +7,8 @@ FROM ${OS_TYPE}:${OS_VERSION} as build_trafficserver
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    tzdata apt-utils \
-    clang ccache pkgconf bison flex gettext libc++-dev \
+    tzdata apt-utils curl \
+    build-essential clang llvm-dev ccache pkgconf bison flex gettext libc++-dev \
     cmake ninja-build \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
@@ -43,7 +43,7 @@ COPY --chown=build:build ./debian /src/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
 ARG PKG_REL_DISTRIB
 RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/DebRelCodename/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
-RUN dpkg-buildpackage -us -uc
+RUN CC=clang CXX=clang++ dpkg-buildpackage -us -uc
 
 USER root
 

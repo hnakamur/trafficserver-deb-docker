@@ -13,11 +13,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=-all optimize=-lto
 # package maintainers to append LDFLAGS
 # export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-export CXX=clang++
-export CC=clang
 # We add compile and link flags in CMakeLists.txt
-export CXXFLAGS=-flto
-export LDFLAGS=-flto
+export CXXFLAGS=
+export LDFLAGS=
 
 export LIBYAMLCPP_BUILD_DIR = ./debian/yamlcpp-build-$(DEB_HOST_MULTIARCH)
 export BUILD_DIR = ./debian/build-$(DEB_HOST_MULTIARCH)

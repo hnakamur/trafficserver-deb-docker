@@ -14,15 +14,6 @@ deb-ubuntu2404: build-ubuntu2404
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
 
-clang-ubuntu2404: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target setup_clang \
-		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=24.04 \
-		--build-arg PKG_REL_DISTRIB=ubuntu24.04 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2404 .
-
 build-ubuntu2404: buildkit-logunlimited
 	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04
 	(set -x; \
