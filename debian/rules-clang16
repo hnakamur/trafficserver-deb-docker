@@ -13,8 +13,8 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=-all optimize=-lto
 # package maintainers to append LDFLAGS
 # export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-export CXX=clang++
-export CC=clang
+export CXX=clang++-16
+export CC=clang-16
 # We add compile and link flags in CMakeLists.txt
 export CXXFLAGS=-flto
 export LDFLAGS=-flto

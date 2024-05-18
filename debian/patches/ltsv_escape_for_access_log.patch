@@ -1,5 +1,3 @@
-diff --git a/include/proxy/logging/LogField.h b/include/proxy/logging/LogField.h
-index 0498b3f97..249402d28 100644
 --- a/include/proxy/logging/LogField.h
 +++ b/include/proxy/logging/LogField.h
 @@ -32,7 +32,7 @@
@@ -11,11 +9,9 @@ index 0498b3f97..249402d28 100644
  
  class LogAccess;
  
-diff --git a/src/proxy/logging/LogAccess.cc b/src/proxy/logging/LogAccess.cc
-index a1cd9222c..f052d6be9 100644
 --- a/src/proxy/logging/LogAccess.cc
 +++ b/src/proxy/logging/LogAccess.cc
-@@ -741,6 +741,74 @@ unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice)
+@@ -748,6 +748,74 @@
    return -1;
  }
  
@@ -90,7 +86,7 @@ index a1cd9222c..f052d6be9 100644
  } // end anonymous namespace
  
  /*-------------------------------------------------------------------------
-@@ -762,6 +830,9 @@ LogAccess::unmarshal_str(char **buf, char *dest, int len, LogSlice *slice, LogEs
+@@ -769,6 +837,9 @@
    if (LOG_ESCAPE_JSON == escape_type) {
      return unmarshal_str_json(buf, dest, len, slice);
    }
@@ -99,12 +95,10 @@ index a1cd9222c..f052d6be9 100644
 +  }
  
    char *val_buf = *buf;
-   int val_len   = static_cast<int>(::strlen(val_buf));
-diff --git a/src/proxy/logging/YamlLogConfigDecoders.cc b/src/proxy/logging/YamlLogConfigDecoders.cc
-index f414e6625..edcbe3b63 100644
+   int   val_len = static_cast<int>(::strlen(val_buf));
 --- a/src/proxy/logging/YamlLogConfigDecoders.cc
 +++ b/src/proxy/logging/YamlLogConfigDecoders.cc
-@@ -75,6 +75,8 @@ convert<std::unique_ptr<LogFormat>>::decode(const Node &node, std::unique_ptr<Lo
+@@ -75,6 +75,8 @@
      std::string escape = node["escape"].as<std::string>();
      if (!strncasecmp(escape.c_str(), "json", 4)) {
        escape_type = LOG_ESCAPE_JSON;
@@ -113,9 +107,6 @@ index f414e6625..edcbe3b63 100644
      } else if (!strncasecmp(escape.c_str(), "none", 4)) {
        escape_type = LOG_ESCAPE_NONE;
      } else {
-diff --git a/tests/gold_tests/logging/gold/field-ltsv-test.gold b/tests/gold_tests/logging/gold/field-ltsv-test.gold
-new file mode 100644
-index 000000000..7a1a1b2e2
 --- /dev/null
 +++ b/tests/gold_tests/logging/gold/field-ltsv-test.gold
 @@ -0,0 +1,6 @@
@@ -125,9 +116,6 @@ index 000000000..7a1a1b2e2
 +foo:abd/ef	foo-slice:d
 +foo:ab	foo-slice:
 +foo:ab\\d/ef	foo-slice:\\d
-diff --git a/tests/gold_tests/logging/log-field-ltsv.test.py b/tests/gold_tests/logging/log-field-ltsv.test.py
-new file mode 100644
-index 000000000..c1c4efd12
 --- /dev/null
 +++ b/tests/gold_tests/logging/log-field-ltsv.test.py
 @@ -0,0 +1,138 @@

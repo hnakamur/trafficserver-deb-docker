@@ -96,7 +96,7 @@
 +++ b/plugins/lua/ts_lua_client_request.cc
 @@ -78,6 +78,9 @@
  static void ts_lua_inject_client_request_ssl_curve_api(lua_State *L);
- static int ts_lua_client_request_get_ssl_curve(lua_State *L);
+ static int  ts_lua_client_request_get_ssl_curve(lua_State *L);
  
 +static void ts_lua_inject_client_request_normalize_accept_encoding(lua_State *L);
 +static int ts_lua_client_request_normalize_accept_encoding(lua_State *L);
@@ -146,7 +146,7 @@
  #include "proxy/PluginHttpConnect.h"
  #include "../iocore/net/P_Net.h"
  #include "../iocore/net/P_SSLNextProtocolAccept.h"
-@@ -8850,3 +8851,22 @@
+@@ -8853,3 +8854,22 @@
    return s->parent_params && s->parent_params->parent_table
      ? s->parent_params->parent_table->getEntryCount() : 0;
  }
