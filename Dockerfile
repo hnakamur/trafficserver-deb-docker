@@ -48,7 +48,7 @@ ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
 
 # Note: install pipenv as root user since root privilege is needed to run all tests in autest.
-RUN set -x; if [ $(lsb_release -is) = "Ubuntu" ]; then \
+RUN set -x; if [ $(lsb_release -cs) = "jammy" -a ]; then \
     pip3 install pipenv; \
     fi
 
