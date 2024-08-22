@@ -42,7 +42,7 @@ RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 COPY --chown=build:build ./debian /src/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
 ARG PKG_REL_DISTRIB
-RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/DebRelCodename/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
+RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/UNRELEASED/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
 RUN CC=clang CXX=clang++ dpkg-buildpackage -us -uc
 
 USER root
@@ -81,7 +81,7 @@ sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
 PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
   --directory /src/trafficserver/tests/gold_tests \
   --ats-bin=/opt/trafficserver/bin \
-  --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.10.1/linux-${arch} \
+  --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.12.0/linux-${arch} \
   --build-root ${build_dir_fullpath} \
   --sandbox \${sandbox_dir}
 EOF

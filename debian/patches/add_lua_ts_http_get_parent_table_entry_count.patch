@@ -1,6 +1,6 @@
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -3105,3 +3105,8 @@
+@@ -3074,3 +3074,8 @@
  {
    return static_cast<std::remove_cv_t<T> *>(TSmalloc(count * sizeof(T)));
  }
@@ -48,7 +48,7 @@
 +}
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -8841,3 +8841,15 @@
+@@ -8835,3 +8835,15 @@
    }
    return retval;
  }

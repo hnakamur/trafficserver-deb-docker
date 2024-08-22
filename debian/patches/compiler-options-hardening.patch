@@ -1,8 +1,8 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -591,6 +591,8 @@
+@@ -621,6 +621,8 @@
  )
- add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation;-Wno-stringop-overflow>")
+ add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation>")
  
 +include(hardening)
 +

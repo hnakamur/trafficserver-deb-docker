@@ -11,7 +11,7 @@
  
 --- a/src/proxy/logging/LogAccess.cc
 +++ b/src/proxy/logging/LogAccess.cc
-@@ -748,6 +748,74 @@
+@@ -758,6 +758,74 @@
    return -1;
  }
  
@@ -86,7 +86,7 @@
  } // end anonymous namespace
  
  /*-------------------------------------------------------------------------
-@@ -769,6 +837,9 @@
+@@ -779,6 +847,9 @@
    if (LOG_ESCAPE_JSON == escape_type) {
      return unmarshal_str_json(buf, dest, len, slice);
    }

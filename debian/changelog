@@ -1,4 +1,4 @@
-trafficserver (10.0.0~20240516-1hn1DebRelDistrib) DebRelCodename; urgency=medium
+trafficserver (10.0.0~rc0-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Initial release
 

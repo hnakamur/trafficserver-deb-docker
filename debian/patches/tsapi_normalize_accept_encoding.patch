@@ -1,6 +1,6 @@
 --- a/doc/admin-guide/plugins/lua.en.rst
 +++ b/doc/admin-guide/plugins/lua.en.rst
-@@ -1277,6 +1277,28 @@
+@@ -1239,6 +1239,28 @@
  
  :ref:`TOP <admin-plugins-ts-lua>`
  
@@ -41,7 +41,7 @@
    static void remove_100_continue_headers(HttpTransact::State *s, HTTPHdr *outgoing);
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -3110,3 +3110,14 @@
+@@ -3079,3 +3079,14 @@
   * Get entry count in parent.config.
   */
  int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
@@ -94,7 +94,7 @@
 +end
 --- a/plugins/lua/ts_lua_client_request.cc
 +++ b/plugins/lua/ts_lua_client_request.cc
-@@ -78,6 +78,9 @@
+@@ -75,6 +75,9 @@
  static void ts_lua_inject_client_request_ssl_curve_api(lua_State *L);
  static int  ts_lua_client_request_get_ssl_curve(lua_State *L);
  
@@ -104,7 +104,7 @@
  void
  ts_lua_inject_client_request_api(lua_State *L)
  {
-@@ -99,6 +102,7 @@
+@@ -95,6 +98,7 @@
    ts_lua_inject_client_request_ssl_cipher_api(L);
    ts_lua_inject_client_request_ssl_protocol_api(L);
    ts_lua_inject_client_request_ssl_curve_api(L);
@@ -112,7 +112,7 @@
  
    lua_setfield(L, -2, "client_request");
  }
-@@ -1125,3 +1129,23 @@
+@@ -1074,3 +1078,23 @@
  
    return 1;
  }
@@ -146,7 +146,7 @@
  #include "proxy/PluginHttpConnect.h"
  #include "../iocore/net/P_Net.h"
  #include "../iocore/net/P_SSLNextProtocolAccept.h"
-@@ -8853,3 +8854,22 @@
+@@ -8847,3 +8848,22 @@
    return s->parent_params && s->parent_params->parent_table
      ? s->parent_params->parent_table->getEntryCount() : 0;
  }

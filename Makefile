@@ -1,10 +1,10 @@
-PKG_VERSION=10.0.0~20240516
+PKG_VERSION=10.0.0~rc0
 PKG_REL_PREFIX=1hn1
 ifdef NO_CACHE
 DOCKER_NO_CACHE=--no-cache
 endif
 
-LUAJIT_DEB_VERSION=2.1.20240314-1hn1
+LUAJIT_DEB_VERSION=2.1.20240815-1hn1
 
 LOGUNLIMITED_BUILDER=logunlimited
 
@@ -41,6 +41,8 @@ autest-ubuntu2404: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=24.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu24.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
 		-t ats-ubuntu2404 .
 	docker run --rm -it ats-ubuntu2404 bash
 
@@ -86,6 +88,8 @@ autest-ubuntu2204: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
 		-t ats-ubuntu2204 -f Dockerfile-clang16 .
 	docker run --rm -it ats-ubuntu2204 bash
 
@@ -122,6 +126,8 @@ autest-debian12: buildkit-logunlimited
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=debian12 \
 		-t ats-debian12 -f Dockerfile-clang16 .
 	docker run --rm -it ats-debian12 bash
 
