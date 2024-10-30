@@ -52,7 +52,7 @@
 +int
 +unmarshal_str_ltsv(char **buf, char *dest, int len, LogSlice *slice)
 +{
-+  Debug("log-escape", "unmarshal_str_ltsv start, len=%d, slice=%p", len, slice);
++  Dbg(dbg_ctl_log_escape, "unmarshal_str_ltsv start, len=%d, slice=%p", len, slice);
 +
 +  char *val_buf   = *buf;
 +  int val_len     = static_cast<int>(::strlen(val_buf));
@@ -64,7 +64,7 @@
 +    int offset, n;
 +
 +    n = slice->toStrOffset(escaped_len, &offset);
-+    Debug("log-escape", "unmarshal_str_ltsv start, n=%d, offset=%d", n, offset);
++    Dbg(dbg_ctl_log_escape, "unmarshal_str_ltsv start, n=%d, offset=%d", n, offset);
 +    if (n <= 0) {
 +      return 0;
 +    }
