@@ -1,3 +1,9 @@
+trafficserver (10.0.2-1hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Upstream 10.0.2
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Thu, 14 Nov 2024 22:24:23 +0900
+
 trafficserver (10.0.1-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Upstream 10.0.1
