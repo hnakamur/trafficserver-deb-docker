@@ -26,6 +26,8 @@ EnvironmentFile=-/etc/default/trafficserver
 PIDFile=/run/trafficserver/manager.lock
 ExecStart=/usr/bin/traffic_manager $TM_DAEMON_ARGS
 ExecReload=/usr/bin/traffic_ctl config reload
+User=trafficserver
+Group=trafficserver
 
 [Install]
 WantedBy=multi-user.target

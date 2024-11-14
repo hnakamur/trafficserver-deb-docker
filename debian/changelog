@@ -1,10 +1,16 @@
-trafficserver (9.2.5-1hn1DebRelDistrib) DebRelCodename; urgency=medium
+trafficserver (9.2.6-1hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * 9.2.6
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Thu, 14 Nov 2024 20:32:53 +0900
+
+trafficserver (9.2.5-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * 9.2.5
 
  -- Hiroaki Nakamura <hnakamur@gmail.com>  Fri, 02 Aug 2024 23:47:25 +0900
 
-trafficserver (9.2.4-1hn1DebRelDistrib) DebRelCodename; urgency=medium
+trafficserver (9.2.4-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Initial release
 

@@ -61,7 +61,7 @@ RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 COPY --chown=build:build ./debian /src/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
 ARG PKG_REL_DISTRIB
-RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/DebRelCodename/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
+RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/UNRELEASED/$(lsb_release -cs)/" /src/trafficserver/debian/changelog
 RUN dpkg-buildpackage -us -uc
 
 USER root
