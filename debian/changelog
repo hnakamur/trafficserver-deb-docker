@@ -1,3 +1,9 @@
+trafficserver (9.2.7-1hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * 9.2.7
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Wed, 27 Nov 2024 20:14:23 +0900
+
 trafficserver (9.2.6-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * 9.2.6
