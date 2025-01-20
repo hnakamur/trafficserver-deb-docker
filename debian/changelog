@@ -1,3 +1,9 @@
+trafficserver (10.0.2-2hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Build otel_tracer experimental plugin
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Mon, 20 Jan 2025 21:40:58 +0900
+
 trafficserver (10.0.2-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Upstream 10.0.2

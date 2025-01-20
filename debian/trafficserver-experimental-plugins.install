@@ -24,3 +24,4 @@ opt/trafficserver/lib/modules/system_stats.so
 opt/trafficserver/lib/modules/tls_bridge.so
 opt/trafficserver/lib/modules/uri_signing.so
 opt/trafficserver/lib/modules/url_sig.so
+opt/trafficserver/lib/modules/otel_tracer.so
