@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG OS_TYPE=ubuntu
 ARG OS_VERSION=24.04
-FROM ${OS_TYPE}:${OS_VERSION} as build_trafficserver
+FROM ${OS_TYPE}:${OS_VERSION} AS build_trafficserver
 
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
@@ -48,7 +48,7 @@ RUN CC=clang CXX=clang++ dpkg-buildpackage -us -uc
 USER root
 
 ## setup_autest target
-FROM build_trafficserver as setup_autest
+FROM build_trafficserver AS setup_autest
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
     quilt telnet ncat golang nghttp2-client
 RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest && \
@@ -98,5 +98,5 @@ RUN mv tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py tests/gold_tests/bad_h
 RUN mv tests/gold_tests/tls/tls_forward_nonhttp.test.py tests/gold_tests/tls/tls_forward_nonhttp.test.py.disabled
 
 ## run_autest target
-FROM setup_autest as run_autest
+FROM setup_autest AS run_autest
 RUN my-autest.sh run 2>&1 | tee /src/autest.log || :
