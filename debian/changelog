@@ -1,8 +1,9 @@
 trafficserver (10.0.3~rc1-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Upstream 10.0.3-rc1
+  * Add fix_memory_leaks_in_healthchecks_plugin.patch
 
- -- Hiroaki Nakamura <hnakamur@gmail.com>  Fri, 31 Jan 2025 22:53:11 +0900
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Sat, 01 Feb 2025 07:53:40 +0900
 
 trafficserver (10.0.2-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
