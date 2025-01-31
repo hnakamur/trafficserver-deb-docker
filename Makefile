@@ -10,7 +10,7 @@ LOGUNLIMITED_BUILDER=logunlimited
 
 # Ubuntu 24.04
 deb-ubuntu2404: build-ubuntu2404
-	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats-ubuntu2404 bash -c \
+	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats9-ubuntu2404 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
 
@@ -21,7 +21,7 @@ clang-ubuntu2404: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=24.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu24.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2404 .
+		-t ats9-ubuntu2404 .
 
 build-ubuntu2404: buildkit-logunlimited
 	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04
@@ -36,26 +36,31 @@ build-ubuntu2404: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
-		-t ats-ubuntu2404 . \
+		-t ats9-ubuntu2404 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
 
 run-ubuntu2404:
-	docker run --rm -it ats-ubuntu2404 bash
+	docker run --rm -it ats9-ubuntu2404 bash
 
 autest-ubuntu2404: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=24.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu24.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2404 .
-	docker run --rm -it ats-ubuntu2404 bash
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
+		-t ats9-ubuntu2404 . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
+	docker run --rm -it ats9-ubuntu2404 bash
 
 # Ubuntu 22.04
 deb-ubuntu2204: build-ubuntu2204
-	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04:/dist ats-ubuntu2204 bash -c \
+	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04:/dist ats9-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
 
@@ -66,7 +71,7 @@ clang-ubuntu2204: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2204 .
+		-t ats9-ubuntu2204 .
 
 build-ubuntu2204: buildkit-logunlimited
 	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04
@@ -81,26 +86,31 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
-		-t ats-ubuntu2204 . \
+		-t ats9-ubuntu2204 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 
 run-ubuntu2204:
-	docker run --rm -it ats-ubuntu2204 bash
+	docker run --rm -it ats9-ubuntu2204 bash
 
 autest-ubuntu2204: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2204 .
-	docker run --rm -it ats-ubuntu2204 bash
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
+		-t ats9-ubuntu2204 . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
+	docker run --rm -it ats9-ubuntu2204 bash
 
 # Debian 12
 deb-debian12: build-debian12
-	docker run --rm -v ././trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12:/dist ats-debian12 bash -c \
+	docker run --rm -v ././trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12:/dist ats9-debian12 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/
 
@@ -117,22 +127,27 @@ build-debian12: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		-t ats-debian12 . \
+		-t ats9-debian12 . \
 	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 
 run-debian12:
-	docker run --rm -it ats-debian12 bash
+	docker run --rm -it ats9-debian12 bash
 
 autest-debian12: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
 		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
 		--build-arg PKG_REL_DISTRIB=debian12 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-debian12 .
-	docker run --rm -it ats-debian12 bash
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=debian12 \
+		-t ats9-debian12 . \
+	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
+	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
+	docker run --rm -it ats9-debian12 bash
 
 buildkit-logunlimited:
 	if ! docker buildx inspect logunlimited 2>/dev/null; then \
