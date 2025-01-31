@@ -35,6 +35,7 @@ run-ubuntu2404:
 	docker run --rm -it ats10-ubuntu2404 bash
 
 autest-ubuntu2404: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
@@ -43,7 +44,9 @@ autest-ubuntu2404: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
-		-t ats10-ubuntu2404 .
+		-t ats10-ubuntu2404 . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
 	docker run --rm -it ats10-ubuntu2404 bash
 
 # Ubuntu 22.04
@@ -73,6 +76,7 @@ run-ubuntu2204:
 	docker run --rm -it ats10-ubuntu2204 bash
 
 autest-ubuntu2204: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
@@ -81,7 +85,9 @@ autest-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
-		-t ats10-ubuntu2204 -f Dockerfile .
+		-t ats10-ubuntu2204 -f Dockerfile . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 	docker run --rm -it ats10-ubuntu2204 bash
 
 # Debian 12
@@ -111,6 +117,7 @@ run-debian12:
 	docker run --rm -it ats10-debian12 bash
 
 autest-debian12: buildkit-logunlimited
+	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
@@ -119,7 +126,9 @@ autest-debian12: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		-t ats10-debian12 -f Dockerfile .
+		-t ats10-debian12 -f Dockerfile . \
+	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
+	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
 	docker run --rm -it ats10-debian12 bash
 
 buildkit-logunlimited:
