@@ -111,6 +111,7 @@ cd ${build_dir_fullpath}/tests
 PIPENV_VENV_IN_PROJECT=True pipenv install 
 
 sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
+env PYTHONPATH=${SRC_DIR}/trafficserver/gold_tests/remap:$PYTHONPATH} \
 PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
   --directory /src/trafficserver/tests/gold_tests \
   --ats-bin=/opt/trafficserver/bin \
