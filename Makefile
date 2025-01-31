@@ -52,15 +52,6 @@ deb-ubuntu2204: build-ubuntu2204
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
 
-clang-ubuntu2204: buildkit-logunlimited
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target setup_clang \
-		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
-		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		-t ats-ubuntu2204 -f Dockerfile-clang16 .
-
 build-ubuntu2204: buildkit-logunlimited
 	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04
 	(set -x; \
@@ -74,7 +65,7 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
-		-t ats-ubuntu2204 -f Dockerfile-clang16 . \
+		-t ats-ubuntu2204 -f Dockerfile . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 
@@ -90,7 +81,7 @@ autest-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
-		-t ats-ubuntu2204 -f Dockerfile-clang16 .
+		-t ats-ubuntu2204 -f Dockerfile .
 	docker run --rm -it ats-ubuntu2204 bash
 
 # Debian 12
@@ -112,7 +103,7 @@ build-debian12: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		-t ats-debian12 -f Dockerfile-clang16 . \
+		-t ats-debian12 -f Dockerfile . \
 	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
 
@@ -128,7 +119,7 @@ autest-debian12: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		-t ats-debian12 -f Dockerfile-clang16 .
+		-t ats-debian12 -f Dockerfile .
 	docker run --rm -it ats-debian12 bash
 
 buildkit-logunlimited:

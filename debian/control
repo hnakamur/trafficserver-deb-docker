@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Hiroaki Nakamura <hnakamur@gmail.com>
 Build-Depends: debhelper-compat (= 13), cmake, ninja-build,
   libssl-dev, libexpat1-dev, libpcre3-dev, libcap-dev,
-  libhwloc-dev, libunwind-18-dev, zlib1g-dev,
+  libhwloc-dev, libunwind-${LLVM_MAJOR_VERSION}-dev, zlib1g-dev,
   tcl-dev, tcl8.6-dev, libjemalloc-dev, libluajit-5.1-dev, liblzma-dev,
   libhiredis-dev, libbrotli-dev, libncurses-dev, libgeoip-dev, libmagick++-dev,
   libmaxminddb-dev, libjansson-dev, libcjose-dev
