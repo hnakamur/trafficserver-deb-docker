@@ -1,3 +1,9 @@
+trafficserver (9.2.8-1hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * 9.2.8
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Sat, 01 Feb 2025 08:14:30 +0900
+
 trafficserver (9.2.7-2hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Fix memory leaks in the healthchecks plugin
