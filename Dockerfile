@@ -80,11 +80,13 @@ USER root
 
 ## setup_autest target
 FROM build_trafficserver AS setup_autest
+ARG GO_VERSION=1.23.5
+RUN curl -sSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar zx -C /usr/local/
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    quilt telnet ncat golang nghttp2-client
-RUN go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest && \
+    quilt telnet ncat nghttp2-client
+RUN /usr/local/go/bin/go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpbin@latest && \
     mv /root/go/bin/go-httpbin /usr/local/bin/go-httpbin
-RUN go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
+RUN /usr/local/go/bin/go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
     mv /root/go/bin/h2spec /usr/local/bin/h2spec
 
 RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
