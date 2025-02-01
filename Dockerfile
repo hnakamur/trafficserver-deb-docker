@@ -127,10 +127,6 @@ RUN QUILT_PATCHES=debian/patches quilt push -a
 
 USER root
 
-# Disable bad_http_fmt test since it does not finish.
-RUN mv tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py.disabled
-RUN mv tests/gold_tests/tls/tls_forward_nonhttp.test.py tests/gold_tests/tls/tls_forward_nonhttp.test.py.disabled
-
 ## run_autest target
 FROM setup_autest AS run_autest
 RUN my-autest.sh run 2>&1 | tee /src/autest.log || :
