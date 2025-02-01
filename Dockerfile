@@ -3,36 +3,19 @@ ARG OS_TYPE=ubuntu
 ARG OS_VERSION=24.04
 FROM ${OS_TYPE}:${OS_VERSION} AS build_trafficserver
 
-# setup llvm repository
-ARG LLVM_MAJOR_VERSION=18
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install curl lsb-release dpkg && \
-    mkdir -p /etc/apt/keyrings && \
-    apt_key_path=/etc/apt/keyrings/apt.llvm.org.asc; \
-    curl -sS -o $apt_key_path https://apt.llvm.org/llvm-snapshot.gpg.key && \
-    arch=$(dpkg --print-architecture); \
-    codename=$(lsb_release -sc); \
-    cat <<EOF > /etc/apt/sources.list.d/llvm-${LLVM_MAJOR_VERSION}.list
-deb [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main                                                                                     deb-src [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
-EOF
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install libunwind-${LLVM_MAJOR_VERSION}-dev
-
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     tzdata apt-utils curl \
-    build-essential clang ccache pkgconf bison flex gettext \
-    cmake ninja-build \
+    build-essential ccache pkgconf bison flex gettext \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
     libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
     libhwloc-dev zlib1g-dev \
     tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
-    libmaxminddb-dev libjansson-dev libcjose-dev \
+    libmaxminddb-dev libjansson-dev libcjose-dev libunwind-dev \
     graphviz libboost-dev default-libmysqlclient-dev python3-sphinx plantuml \
     python3-sphinxcontrib.plantuml libcurl4-openssl-dev libkyotocabinet-dev \
     libmemcached-dev libcrypto++-dev \
@@ -46,8 +29,6 @@ RUN set -x; if [ $(lsb_release -sc) = "jammy" ]; then \
     else \
     env DEBIAN_FRONTEND=noninteractive apt-get -y install pipenv; \
     fi
-
-RUN type cmake; cmake --version
 
 ARG LUAJIT_DEB_VERSION
 ARG LUAJIT_DEB_OS_ID
@@ -65,10 +46,9 @@ WORKDIR ${SRC_DIR}
 ARG PKG_VERSION
 RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 
-COPY --chown=build:build ./debian ${SRC_DIR}/trafficserver/debian/
+COPY --chown=${BUILD_USER}:${BUILD_USER} ./debian ${SRC_DIR}/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
 ARG PKG_REL_DISTRIB
-RUN sed -i "s/\${LLVM_MAJOR_VERSION}/${LLVM_MAJOR_VERSION}/" ${SRC_DIR}/trafficserver/debian/control
 RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/UNRELEASED/$(lsb_release -cs)/" ${SRC_DIR}/trafficserver/debian/changelog
 RUN dpkg-buildpackage -us -uc
 
@@ -85,36 +65,9 @@ RUN /usr/local/go/bin/go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpb
 RUN /usr/local/go/bin/go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
     mv /root/go/bin/h2spec /usr/local/bin/h2spec
 
-RUN make install
+RUN apt-get install -y ${SRC_DIR}/*.deb
 RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
 RUN mkdir -p /test
-RUN chown nobody:nogroup /test
-
-RUN build_dir=debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
-    cat <<EOF > /usr/local/bin/autest-all.sh
-#!/bin/bash
-set -eu
-cd ${SRC_DIR}/trafficserver
-cmake --build ${build_dir} --target autest --verbose
-EOF
-
-RUN build_dir_fullpath=${SRC_DIR}/trafficserver/debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
-    arch=$(dpkg --print-architecture); \
-    cat <<EOF > /usr/local/bin/my-autest.sh
-#!/bin/bash
-set -eu
-cd ${build_dir_fullpath}/tests
-PIPENV_VENV_IN_PROJECT=True pipenv install 
-
-sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
-PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
-  --directory ${SRC_DIR}/trafficserver/tests/gold_tests \
-  --ats-bin=/opt/trafficserver/bin \
-  --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.10.1/linux-${arch} \
-  --build-root ${build_dir_fullpath} \
-  --sandbox \${sandbox_dir}
-EOF
-RUN chmod +x /usr/local/bin/autest-all.sh /usr/local/bin/my-autest.sh
 
 USER ${BUILD_USER}
 ENV LANG=C
@@ -124,4 +77,6 @@ USER root
 
 ## run_autest target
 FROM setup_autest AS run_autest
-RUN my-autest.sh run 2>&1 | tee /src/autest.log || :
+USER ${BUILD_USER}
+WORKDIR ${SRC_DIR}/trafficserver/tests
+RUN ./autest.sh --ats-bin /usr/bin 2>&1 | tee /src/autest.log || :
