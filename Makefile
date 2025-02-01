@@ -56,7 +56,6 @@ autest-ubuntu2404: buildkit-logunlimited
 		-t ats9-ubuntu2404 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
-	docker run --rm -it ats9-ubuntu2404 bash
 
 # Ubuntu 22.04
 deb-ubuntu2204:
@@ -106,7 +105,6 @@ autest-ubuntu2204: buildkit-logunlimited
 		-t ats9-ubuntu2204 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
-	docker run --rm -it ats9-ubuntu2204 bash
 
 # Debian 12
 deb-debian12:
@@ -147,7 +145,6 @@ autest-debian12: buildkit-logunlimited
 		-t ats9-debian12 . \
 	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
 	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
-	docker run --rm -it ats9-debian12 bash
 
 buildkit-logunlimited:
 	if ! docker buildx inspect logunlimited 2>/dev/null; then \
