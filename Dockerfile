@@ -85,7 +85,7 @@ RUN /usr/local/go/bin/go install github.com/mccutchen/go-httpbin/v2/cmd/go-httpb
 RUN /usr/local/go/bin/go install github.com/summerwind/h2spec/cmd/h2spec@latest && \
     mv /root/go/bin/h2spec /usr/local/bin/h2spec
 
-RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
+RUN make install
 RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
 RUN mkdir -p /test
 RUN chown nobody:nogroup /test
@@ -121,10 +121,6 @@ ENV LANG=C
 RUN QUILT_PATCHES=debian/patches quilt push -a
 
 USER root
-
-# Disable bad_http_fmt test since it does not finish.
-RUN mv tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py tests/gold_tests/bad_http_fmt/bad_http_fmt.test.py.disabled
-RUN mv tests/gold_tests/tls/tls_forward_nonhttp.test.py tests/gold_tests/tls/tls_forward_nonhttp.test.py.disabled
 
 ## run_autest target
 FROM setup_autest AS run_autest
