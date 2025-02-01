@@ -9,7 +9,7 @@ LUAJIT_DEB_VERSION=2.1.20250117-1hn1
 LOGUNLIMITED_BUILDER=logunlimited
 
 # Ubuntu 24.04
-deb-ubuntu2404: build-ubuntu2404
+deb-ubuntu2404:
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats9-ubuntu2404 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
@@ -59,7 +59,7 @@ autest-ubuntu2404: buildkit-logunlimited
 	docker run --rm -it ats9-ubuntu2404 bash
 
 # Ubuntu 22.04
-deb-ubuntu2204: build-ubuntu2204
+deb-ubuntu2204:
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04:/dist ats9-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
@@ -109,7 +109,7 @@ autest-ubuntu2204: buildkit-logunlimited
 	docker run --rm -it ats9-ubuntu2204 bash
 
 # Debian 12
-deb-debian12: build-debian12
+deb-debian12:
 	docker run --rm -v ././trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12:/dist ats9-debian12 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/
