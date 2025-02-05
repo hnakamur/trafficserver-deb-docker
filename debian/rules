@@ -18,6 +18,7 @@ include /usr/share/dpkg/architecture.mk
 include /usr/share/dpkg/pkg-info.mk
 
 configure_flags = \
+        --with-jemalloc=/usr \
 	--enable-layout=opt \
 	--prefix=/opt/trafficserver \
 	--includedir=/usr/include \
