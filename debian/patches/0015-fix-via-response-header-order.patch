@@ -5,7 +5,7 @@ Last-Update: 2023-01-24
 ---
 --- a/proxy/http/HttpTransact.cc
 +++ b/proxy/http/HttpTransact.cc
-@@ -4697,11 +4697,17 @@
+@@ -4706,11 +4706,17 @@
      //  the order of the fields
      MIMEField *resp_via = s->hdr_info.server_response.field_find(MIME_FIELD_VIA, MIME_LEN_VIA);
      if (resp_via) {
@@ -23,7 +23,7 @@ Last-Update: 2023-01-24
        }
        // HDR FIX ME - Multiple appends are VERY slow
        while (resp_via) {
-@@ -4710,6 +4716,9 @@
+@@ -4719,6 +4725,9 @@
          s->hdr_info.client_response.field_value_append(our_via, cfield, clen, true);
          resp_via = resp_via->m_next_dup;
        }
