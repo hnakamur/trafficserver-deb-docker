@@ -48,7 +48,7 @@
 +}
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -8849,3 +8849,15 @@
+@@ -8852,3 +8852,15 @@
    }
    return retval;
  }

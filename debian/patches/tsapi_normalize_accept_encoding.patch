@@ -146,7 +146,7 @@
  #include "proxy/PluginHttpConnect.h"
  #include "../iocore/net/P_Net.h"
  #include "../iocore/net/P_SSLNextProtocolAccept.h"
-@@ -8861,3 +8862,22 @@
+@@ -8864,3 +8865,22 @@
    return s->parent_params && s->parent_params->parent_table
      ? s->parent_params->parent_table->getEntryCount() : 0;
  }
