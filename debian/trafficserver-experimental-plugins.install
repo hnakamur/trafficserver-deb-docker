@@ -20,6 +20,7 @@ usr/lib/trafficserver/modules/metalink.so
 usr/lib/trafficserver/modules/money_trace.so
 usr/lib/trafficserver/modules/mp4.so
 usr/lib/trafficserver/modules/mysql_remap.so
+usr/lib/trafficserver/modules/otel_tracer.so
 usr/lib/trafficserver/modules/rate_limit.so
 usr/lib/trafficserver/modules/redo_cache_lookup.so
 usr/lib/trafficserver/modules/remap_stats.so

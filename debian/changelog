@@ -1,3 +1,9 @@
+trafficserver (9.2.11-3hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Build OpenTelemetry Tracer Plugin
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Tue, 29 Jul 2025 21:04:46 +0900
+
 trafficserver (9.2.11-2hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Change optimize level from -O3 to -O2

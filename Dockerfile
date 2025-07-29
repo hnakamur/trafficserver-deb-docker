@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 ARG OS_TYPE=ubuntu
 ARG OS_VERSION=24.04
-FROM ${OS_TYPE}:${OS_VERSION} AS build_trafficserver
+FROM ${OS_TYPE}:${OS_VERSION} AS setup_build
 
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     tzdata apt-utils curl \
-    build-essential ccache pkgconf bison flex gettext \
+    build-essential cmake ccache pkgconf bison flex gettext \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
     libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
@@ -40,6 +40,44 @@ ARG SRC_DIR=/src
 ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
 
+## build nlohmann-json
+FROM setup_build AS build_nlohmann_json
+ARG NLOHMANN_JSON_VERSION
+USER ${BUILD_USER}
+WORKDIR ${SRC_DIR}
+RUN curl -sSL https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz | tar zx
+WORKDIR ${SRC_DIR}/json-${NLOHMANN_JSON_VERSION}
+RUN cmake -B build -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
+RUN cmake --build build --config Release --parallel --verbose
+USER root
+RUN cmake --install build --prefix /usr/local/
+
+## build protobuf
+FROM build_nlohmann_json AS build_protobuf
+ARG PROTOBUF_VERSION
+USER ${BUILD_USER}
+WORKDIR ${SRC_DIR}
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/archive/refs/tags/v${PROTOBUF_VERSION}.tar.gz | tar zx
+WORKDIR ${SRC_DIR}/protobuf-${PROTOBUF_VERSION}
+RUN cmake -B build -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN cmake --build build --config Release --parallel --verbose
+USER root
+RUN cmake --install build --prefix /usr/local/
+
+## build opentelemetry-cpp
+FROM build_protobuf AS build_otel_cpp
+ARG OTEL_CPP_VERSION
+USER ${BUILD_USER}
+WORKDIR ${SRC_DIR}
+RUN curl -sSL https://github.com/open-telemetry/opentelemetry-cpp/archive/refs/tags/v${OTEL_CPP_VERSION}.tar.gz | tar zx
+WORKDIR ${SRC_DIR}/opentelemetry-cpp-${OTEL_CPP_VERSION}
+RUN cmake -B build -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_JAEGER=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=OFF -DWITH_OTLP_HTTP=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
+RUN cmake --build build --config Release --parallel --verbose
+USER root
+RUN cmake --install build --prefix /usr/local/
+
+## build trafficserver
+FROM build_otel_cpp AS build_trafficserver
 COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ ${SRC_DIR}/trafficserver/
 USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
