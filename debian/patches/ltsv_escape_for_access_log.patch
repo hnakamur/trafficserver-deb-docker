@@ -1,6 +1,6 @@
 --- a/include/proxy/logging/LogField.h
 +++ b/include/proxy/logging/LogField.h
-@@ -32,7 +32,7 @@
+@@ -33,7 +33,7 @@
  #include "proxy/logging/LogFieldAliasMap.h"
  #include "proxy/Milestones.h"
  
@@ -11,7 +11,7 @@
  
 --- a/src/proxy/logging/LogAccess.cc
 +++ b/src/proxy/logging/LogAccess.cc
-@@ -758,6 +758,74 @@
+@@ -769,6 +769,74 @@
    return -1;
  }
  
@@ -86,7 +86,7 @@
  } // end anonymous namespace
  
  /*-------------------------------------------------------------------------
-@@ -779,6 +847,9 @@
+@@ -790,6 +858,9 @@
    if (LOG_ESCAPE_JSON == escape_type) {
      return unmarshal_str_json(buf, dest, len, slice);
    }

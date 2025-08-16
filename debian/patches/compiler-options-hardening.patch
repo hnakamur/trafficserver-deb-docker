@@ -1,6 +1,6 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -621,6 +621,8 @@
+@@ -650,6 +650,8 @@
  )
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation>")
  

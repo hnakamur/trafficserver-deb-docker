@@ -36,3 +36,5 @@ opt/trafficserver/lib/modules/tslua.so
 opt/trafficserver/lib/modules/txn_box.so
 opt/trafficserver/lib/modules/webp_transform.so
 opt/trafficserver/lib/modules/xdebug.so
+opt/trafficserver/lib/modules/ja4_fingerprint.so
+opt/trafficserver/lib/modules/origin_server_auth.so
