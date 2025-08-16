@@ -1,17 +1,21 @@
+diff --git a/include/ts/ts.h b/include/ts/ts.h
+index 42998a756..0493cb401 100644
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -3074,3 +3074,8 @@
- {
-   return static_cast<std::remove_cv_t<T> *>(TSmalloc(count * sizeof(T)));
- }
+@@ -3102,3 +3102,8 @@ TSReturnCode TSVConnPPInfoGet(TSVConn vconn, uint16_t key, const char **value, i
+ 
+ */
+ TSReturnCode TSVConnPPInfoIntGet(TSVConn vconn, uint16_t key, TSMgmtInt *value);
 +
 +/*
 + * Get entry count in parent.config.
 + */
 +int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
+diff --git a/plugins/lua/ts_lua_http.cc b/plugins/lua/ts_lua_http.cc
+index 4326224f7..00d4588e4 100644
 --- a/plugins/lua/ts_lua_http.cc
 +++ b/plugins/lua/ts_lua_http.cc
-@@ -128,6 +128,8 @@
+@@ -128,6 +128,8 @@ static int  ts_lua_http_req_transform_get_downstream_watermark_bytes(lua_State *
  static int  ts_lua_http_req_transform_set_downstream_watermark_bytes(lua_State *L);
  static int  ts_lua_http_req_transform_set_upstream_bytes(lua_State *L);
  
@@ -20,7 +24,7 @@
  void
  ts_lua_inject_http_api(lua_State *L)
  {
-@@ -322,6 +324,9 @@
+@@ -322,6 +324,9 @@ ts_lua_inject_http_misc_api(lua_State *L)
    lua_pushcfunction(L, ts_lua_http_get_ssn_remote_addr);
    lua_setfield(L, -2, "get_ssn_remote_addr");
  
@@ -30,7 +34,7 @@
    ts_lua_inject_server_state_variables(L);
  }
  
-@@ -1195,3 +1200,15 @@
+@@ -1195,3 +1200,15 @@ ts_lua_http_req_transform_set_upstream_bytes(lua_State *L)
  {
    return ts_lua_http_resp_transform_set_downstream_bytes(L);
  }
@@ -46,9 +50,11 @@
 +  lua_pushinteger(L, (lua_Integer)count);
 +  return 1;
 +}
+diff --git a/src/api/InkAPI.cc b/src/api/InkAPI.cc
+index 234d77c06..6d7f899e7 100644
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -8852,3 +8852,15 @@
+@@ -9027,3 +9027,15 @@ TSHttpTxnTypeGet(TSHttpTxn txnp)
    }
    return retval;
  }
