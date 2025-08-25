@@ -1,6 +1,19 @@
+From b6a77aa90a1f4d4f46c615182fdc1fb828f818e7 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Sat, 16 Aug 2025 20:52:51 +0900
+Subject: [PATCH 3/4] Add compiler options hardening
+
+---
+ CMakeLists.txt        |  2 ++
+ cmake/hardening.cmake | 35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
+ create mode 100644 cmake/hardening.cmake
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 654022f85..9e6efcc47 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -650,6 +650,8 @@
+@@ -650,6 +650,8 @@ add_compile_options(
  )
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation>")
  
@@ -9,21 +22,30 @@
  if(NOT EXTERNAL_YAML_CPP)
    include(subproject_version)
    subproject_version(YAML_CPP YAMLCPP_LIB_VERSION)
+diff --git a/cmake/hardening.cmake b/cmake/hardening.cmake
+new file mode 100644
+index 000000000..17dc56250
 --- /dev/null
 +++ b/cmake/hardening.cmake
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,35 @@
 +# The compiler and linker options below are copied from Compiler Options
 +# Hardening Guide for C and C++ by the Open Source Security Foundation (OpenSSF)
 +# Best Practices Working Group, 2023-11-29
 +# https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html
-+# with changes: * change -O2 to -O3 * remove -Wl,-z,nodlopen since built plugins
-+# cannot be loaded
++# with changes:
++#
++# * remove -Wl,-z,nodlopen since built plugins cannot be loaded
++# * remove -Wconversion since there are a lot of narrowing conversions
++#
 +add_compile_options(
-+  -O3
++  -O2
 +  -Wall
 +  -Wformat=2
-+  -Wconversion
 +  -Wimplicit-fallthrough
++  -Wno-error=conversion
++  -Wno-error=format-nonliteral
++  -Wno-error=maybe-uninitialized
++  -Wno-error=stringop-truncation
 +  -U_FORTIFY_SOURCE
 +  -D_FORTIFY_SOURCE=3
 +  -D_GLIBCXX_ASSERTIONS
@@ -41,3 +63,6 @@
 +  add_compile_options(-Wtrampolines)
 +endif()
 +add_link_options(-Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now)
+-- 
+2.43.0
+

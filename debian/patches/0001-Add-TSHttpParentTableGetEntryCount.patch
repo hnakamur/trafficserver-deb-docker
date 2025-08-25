@@ -1,3 +1,14 @@
+From 8f69fdefc291aff684e6652f1db217c91a7add74 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Sat, 16 Aug 2025 20:51:11 +0900
+Subject: [PATCH 1/4] Add TSHttpParentTableGetEntryCount
+
+---
+ include/ts/ts.h            |  5 +++++
+ plugins/lua/ts_lua_http.cc | 17 +++++++++++++++++
+ src/api/InkAPI.cc          | 11 +++++++++++
+ 3 files changed, 33 insertions(+)
+
 diff --git a/include/ts/ts.h b/include/ts/ts.h
 index 42998a756..0493cb401 100644
 --- a/include/ts/ts.h
@@ -51,10 +62,10 @@ index 4326224f7..00d4588e4 100644
 +  return 1;
 +}
 diff --git a/src/api/InkAPI.cc b/src/api/InkAPI.cc
-index 234d77c06..6d7f899e7 100644
+index 234d77c06..7cdbbce06 100644
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -9027,3 +9027,15 @@ TSHttpTxnTypeGet(TSHttpTxn txnp)
+@@ -9027,3 +9027,14 @@ TSHttpTxnTypeGet(TSHttpTxn txnp)
    }
    return retval;
  }
@@ -65,8 +76,10 @@ index 234d77c06..6d7f899e7 100644
 +int
 +TSHttpParentTableGetEntryCount(TSHttpTxn txnp)
 +{
-+  HttpSM *sm             = reinterpret_cast<HttpSM *>(txnp);
-+  HttpTransact::State *s = &(sm->t_state);
-+  return s->parent_params && s->parent_params->parent_table
-+    ? s->parent_params->parent_table->getEntryCount() : 0;
++  HttpSM              *sm = reinterpret_cast<HttpSM *>(txnp);
++  HttpTransact::State *s  = &(sm->t_state);
++  return s->parent_params && s->parent_params->parent_table ? s->parent_params->parent_table->getEntryCount() : 0;
 +}
+-- 
+2.43.0
+
