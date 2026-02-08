@@ -9,11 +9,9 @@ Subject: [PATCH 3/4] Add compiler options hardening
  2 files changed, 37 insertions(+)
  create mode 100644 cmake/hardening.cmake
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 654022f85..9e6efcc47 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -650,6 +650,8 @@ add_compile_options(
+@@ -676,6 +676,8 @@
  )
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation>")
  
@@ -22,9 +20,6 @@ index 654022f85..9e6efcc47 100644
  if(NOT EXTERNAL_YAML_CPP)
    include(subproject_version)
    subproject_version(YAML_CPP YAMLCPP_LIB_VERSION)
-diff --git a/cmake/hardening.cmake b/cmake/hardening.cmake
-new file mode 100644
-index 000000000..17dc56250
 --- /dev/null
 +++ b/cmake/hardening.cmake
 @@ -0,0 +1,35 @@
@@ -63,6 +58,3 @@ index 000000000..17dc56250
 +  add_compile_options(-Wtrampolines)
 +endif()
 +add_link_options(-Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now)
--- 
-2.43.0
-
