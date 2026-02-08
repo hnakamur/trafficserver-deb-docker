@@ -12,7 +12,7 @@ OTEL_CPP_VERSION=1.3.0
 LOGUNLIMITED_BUILDER=logunlimited
 
 # Ubuntu 24.04
-deb-ubuntu2404:
+deb-ubuntu2404: build-ubuntu2404
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats9-ubuntu2404 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
@@ -55,7 +55,7 @@ autest-ubuntu2404: buildkit-logunlimited
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
 
 # Ubuntu 22.04
-deb-ubuntu2204:
+deb-ubuntu2204: build-ubuntu2204
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04:/dist ats9-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
 	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
@@ -106,49 +106,6 @@ autest-ubuntu2204: buildkit-logunlimited
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 
-# Debian 12
-deb-debian12:
-	docker run --rm -v ././trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12:/dist ats9-debian12 bash -c \
-	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
-	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/
-
-build-debian12: buildkit-logunlimited
-	sudo mkdir -p ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12
-	(set -x; \
-	git submodule foreach --recursive git remote -v; \
-	git submodule status --recursive; \
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target build_trafficserver \
-		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
-		--build-arg PKG_REL_DISTRIB=debian12 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
-		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
-		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
-		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
-		-t ats9-debian12 . \
-	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
-	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.build.log
-
-run-debian12:
-	docker run --rm -it ats9-debian12 bash
-
-autest-debian12: buildkit-logunlimited
-	(set -x; \
-	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
-		${DOCKER_NO_CACHE} \
-		--target run_autest \
-		--build-arg OS_TYPE=debian --build-arg OS_VERSION=12 \
-		--build-arg PKG_REL_DISTRIB=debian12 \
-		--build-arg PKG_VERSION=${PKG_VERSION} \
-		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
-		--build-arg LUAJIT_DEB_OS_ID=debian12 \
-		-t ats9-debian12 . \
-	) 2>&1 | sudo tee ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
-	sudo xz --force ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}debian12/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}debian12.autest.log
-
 buildkit-logunlimited:
 	if ! docker buildx inspect logunlimited 2>/dev/null; then \
 		docker buildx create --bootstrap --name ${LOGUNLIMITED_BUILDER} \
@@ -159,4 +116,4 @@ buildkit-logunlimited:
 exec:
 	docker exec -it $$(docker ps -q) bash
 
-.PHONY: deb-debian12 run-debian12 build-debian12 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 buildkit-logunlimited exec
+.PHONY: deb-ubuntu2404 run-ubuntu2404 build-ubuntu2404 autest-ubuntu2404 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 autest-ubuntu2204 buildkit-logunlimited exec
