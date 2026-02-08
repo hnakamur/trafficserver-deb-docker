@@ -63,9 +63,10 @@ ARG SRC_DIR=/src
 ARG BUILD_USER=build
 RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
 
-COPY --chown=${BUILD_USER}:${BUILD_USER} ./trafficserver/ ${SRC_DIR}/trafficserver/
 USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
+ARG GIT_TAG
+RUN git clone --depth 1 --branch ${GIT_TAG} https://github.com/apache/trafficserver
 ARG PKG_VERSION
 RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 

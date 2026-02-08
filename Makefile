@@ -1,4 +1,5 @@
 PKG_VERSION=10.1.1
+GIT_TAG=10.1.1-rc1
 PKG_REL_PREFIX=1hn1
 ifdef NO_CACHE
 DOCKER_NO_CACHE=--no-cache
@@ -25,6 +26,7 @@ build-ubuntu2404: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=24.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu24.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg GIT_TAG=${GIT_TAG} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
 		-t ats10-ubuntu2404 . \
@@ -65,6 +67,7 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=22.04 \
 		--build-arg PKG_REL_DISTRIB=ubuntu22.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg GIT_TAG=${GIT_TAG} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
 		-t ats10-ubuntu2204 -f Dockerfile . \

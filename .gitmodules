@@ -1,3 +1,0 @@
-[submodule "trafficserver"]
-	path = trafficserver
-	url = https://github.com/apache/trafficserver
