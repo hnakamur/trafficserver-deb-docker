@@ -50,6 +50,9 @@ autest-ubuntu2510: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
+		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
+		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
+		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
 		-t ats9-ubuntu2510 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
@@ -93,6 +96,9 @@ autest-ubuntu2404: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
+		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
+		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
+		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
 		-t ats9-ubuntu2404 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
@@ -145,6 +151,9 @@ autest-ubuntu2204: buildkit-logunlimited
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
+		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
+		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
+		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
 		-t ats9-ubuntu2204 . \
 	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
