@@ -11,6 +11,49 @@ OTEL_CPP_VERSION=1.3.0
 
 LOGUNLIMITED_BUILDER=logunlimited
 
+# Ubuntu 25.10
+deb-ubuntu2510: build-ubuntu2510
+	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10:/dist ats9-ubuntu2510 bash -c \
+	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
+	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/
+
+build-ubuntu2510: buildkit-logunlimited
+	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10
+	(set -x; \
+	git submodule foreach --recursive git remote -v; \
+	git submodule status --recursive; \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
+		${DOCKER_NO_CACHE} \
+		--target build_trafficserver \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=25.10 \
+		--build-arg PKG_REL_DISTRIB=ubuntu25.10 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
+		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
+		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
+		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
+		-t ats9-ubuntu2510 . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
+
+run-ubuntu2510:
+	docker run --rm -it ats9-ubuntu2510 bash
+
+autest-ubuntu2510: buildkit-logunlimited
+	(set -x; \
+	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
+		${DOCKER_NO_CACHE} \
+		--target run_autest \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=25.10 \
+		--build-arg PKG_REL_DISTRIB=ubuntu25.10 \
+		--build-arg PKG_VERSION=${PKG_VERSION} \
+		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
+		-t ats9-ubuntu2510 . \
+	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
+	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
+
 # Ubuntu 24.04
 deb-ubuntu2404: build-ubuntu2404
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats9-ubuntu2404 bash -c \
@@ -116,4 +159,4 @@ buildkit-logunlimited:
 exec:
 	docker exec -it $$(docker ps -q) bash
 
-.PHONY: deb-ubuntu2404 run-ubuntu2404 build-ubuntu2404 autest-ubuntu2404 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 autest-ubuntu2204 buildkit-logunlimited exec
+.PHONY: deb-ubuntu2510 run-ubuntu2510 build-ubuntu2510 autest-ubuntu2510 deb-ubuntu2404 run-ubuntu2404 build-ubuntu2404 autest-ubuntu2404 deb-ubuntu2204 run-ubuntu2204 build-ubuntu2204 autest-ubuntu2204 buildkit-logunlimited exec
