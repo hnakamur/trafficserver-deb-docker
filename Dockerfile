@@ -35,7 +35,7 @@ RUN apt-get update && \
     cmake ninja-build \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
-    libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
+    libssl-dev libexpat1-dev libpcre3-dev libpcre2-dev libcap-dev \
     libhwloc-dev zlib1g-dev netcat-openbsd \
     tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
