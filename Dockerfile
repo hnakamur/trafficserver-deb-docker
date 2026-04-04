@@ -94,7 +94,7 @@ USER root
 
 ## setup_autest target
 FROM build_trafficserver AS setup_autest
-ARG GO_VERSION=1.23.5
+ARG GO_VERSION=1.25.0
 RUN curl -sSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar zx -C /usr/local/
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
     quilt telnet ncat nghttp2-client
