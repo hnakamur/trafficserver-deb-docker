@@ -1,0 +1,24 @@
+From 079791f5231ca11c979e827acb7a9f6e301818b7 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Tue, 7 Apr 2026 08:14:58 +0900
+Subject: [PATCH] Include cstdint in yaml-cpp
+
+---
+ lib/yamlcpp/src/emitterutils.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/yamlcpp/src/emitterutils.cpp b/lib/yamlcpp/src/emitterutils.cpp
+index 6cdf6de7e..c13949b80 100644
+--- a/lib/yamlcpp/src/emitterutils.cpp
++++ b/lib/yamlcpp/src/emitterutils.cpp
+@@ -1,6 +1,7 @@
+ #include <algorithm>
+ #include <iomanip>
+ #include <sstream>
++#include <cstdint>
+ 
+ #include "emitterutils.h"
+ #include "exp.h"
+-- 
+2.51.0
+

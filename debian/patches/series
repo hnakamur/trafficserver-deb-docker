@@ -2,3 +2,4 @@
 0002-Add-ltsv-for-log-escape.patch
 0003-Add-compiler-options-hardening.patch
 0004-Add-ts.client_request.normalize_accept_encoding-to-L.patch
+include-cstdint-in-yaml-cpp.patch
