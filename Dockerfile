@@ -21,10 +21,14 @@ RUN apt-get update && \
 
 # setup cmake
 ARG CMAKE_VERSION=3.28.3
-RUN arch=$(arch); \
-    download_url=https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${arch}.tar.gz; \
-    curl -sSL "$download_url" | tar zxf - -C /usr/local/ && \
-    (cd /usr/local/bin; ln -s ../cmake-${CMAKE_VERSION}-linux-${arch}/bin/* .)
+RUN set -x; if [ $(lsb_release -sc) = "jammy" ]; then \
+      arch=$(arch); \
+      download_url=https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${arch}.tar.gz; \
+      curl -sSL "$download_url" | tar zxf - -C /usr/local/ && \
+      (cd /usr/local/bin; ln -s ../cmake-${CMAKE_VERSION}-linux-${arch}/bin/* .); \
+    else \
+      DEBIAN_FRONTEND=noninteractive apt-get -y install cmake; \
+    fi
 
 # Apapted from
 # https://github.com/apache/trafficserver/blob/e4ff6cab0713f25290a62aba74b8e1a595b7bc30/ci/docker/deb/Dockerfile#L46-L58
