@@ -1,3 +1,9 @@
+trafficserver (9.2.11-2hn2DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Add debug-processSignalQueue.patch
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Thu, 23 Apr 2026 10:06:34 +0900
+
 trafficserver (9.2.11-2hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Change optimize level from -O3 to -O2

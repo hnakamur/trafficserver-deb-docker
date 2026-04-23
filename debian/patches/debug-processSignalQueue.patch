@@ -1,0 +1,29 @@
+From 1ab28796d4703673bc100011729c617cd5bcd9db Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Thu, 23 Apr 2026 09:59:52 +0900
+Subject: [PATCH] Improve ProcessManager::processSignalQueue debug log
+
+---
+ mgmt/ProcessManager.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/mgmt/ProcessManager.cc b/mgmt/ProcessManager.cc
+index b8661eebb..ab5e6764e 100644
+--- a/mgmt/ProcessManager.cc
++++ b/mgmt/ProcessManager.cc
+@@ -299,10 +299,11 @@ ProcessManager::processSignalQueue()
+   while (!queue_is_empty(mgmt_signal_queue)) {
+     MgmtMessageHdr *mh = static_cast<MgmtMessageHdr *>(::dequeue(mgmt_signal_queue));
+ 
+-    Debug("pmgmt", "signaling local manager with message ID %d", mh->msg_id);
++    Debug("pmgmt", "signaling local manager with message ID %d, require_lm=%d", mh->msg_id, require_lm);
+ 
+     if (require_lm) {
+       int ret = mgmt_write_pipe(local_manager_sockfd, reinterpret_cast<char *>(mh), sizeof(MgmtMessageHdr) + mh->data_len);
++      Debug("pmgmt", "called smgmt_write_pipe with message ID %d, ret=%d", mh->msg_id, ret);
+       ats_free(mh);
+ 
+       if (ret < 0) {
+-- 
+2.51.0
+
