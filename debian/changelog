@@ -1,3 +1,9 @@
+trafficserver (9.2.11-2hn2DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Add debug_require_lm.patch
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Mon, 22 Jun 2026 09:31:39 +0900
+
 trafficserver (9.2.11-2hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Change optimize level from -O3 to -O2
