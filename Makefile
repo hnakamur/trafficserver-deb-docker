@@ -13,10 +13,10 @@ LOGUNLIMITED_BUILDER=logunlimited
 deb-ubuntu2510: build-ubuntu2510
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10:/dist ats10-ubuntu2510 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
-	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/
+	tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/
 
 build-ubuntu2510: buildkit-logunlimited
-	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10
+	mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
@@ -30,8 +30,8 @@ build-ubuntu2510: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
 		-t ats10-ubuntu2510 . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
 
 run-ubuntu2510:
 	docker run --rm -it ats10-ubuntu2510 bash
@@ -47,17 +47,17 @@ autest-ubuntu2510: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
 		-t ats10-ubuntu2510 . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
 
 # Ubuntu 24.04
 deb-ubuntu2404: build-ubuntu2404
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04:/dist ats10-ubuntu2404 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
-	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
+	tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/
 
 build-ubuntu2404: buildkit-logunlimited
-	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04
+	mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
@@ -71,8 +71,8 @@ build-ubuntu2404: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
 		-t ats10-ubuntu2404 . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.build.log
 
 run-ubuntu2404:
 	docker run --rm -it ats10-ubuntu2404 bash
@@ -88,17 +88,17 @@ autest-ubuntu2404: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu24.04 \
 		-t ats10-ubuntu2404 . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu24.04.autest.log
 
 # Ubuntu 22.04
 deb-ubuntu2204: build-ubuntu2204
 	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04:/dist ats10-ubuntu2204 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
-	sudo tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
+	tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/
 
 build-ubuntu2204: buildkit-logunlimited
-	sudo mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04
+	mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
@@ -112,8 +112,8 @@ build-ubuntu2204: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
 		-t ats10-ubuntu2204 -f Dockerfile . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.build.log
 
 run-ubuntu2204:
 	docker run --rm -it ats10-ubuntu2204 bash
@@ -129,8 +129,8 @@ autest-ubuntu2204: buildkit-logunlimited
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
 		--build-arg LUAJIT_DEB_OS_ID=ubuntu22.04 \
 		-t ats10-ubuntu2204 -f Dockerfile . \
-	) 2>&1 | sudo tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
-	sudo xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu22.04.autest.log
 
 buildkit-logunlimited:
 	if ! docker buildx inspect logunlimited 2>/dev/null; then \
