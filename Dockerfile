@@ -4,19 +4,20 @@ ARG OS_VERSION=24.04
 FROM ${OS_TYPE}:${OS_VERSION} AS build_trafficserver
 
 # setup clang
-ARG LLVM_MAJOR_VERSION=18
+ARG LLVM_MAJOR_VERSION=22
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install curl lsb-release dpkg && \
-    mkdir -p /etc/apt/keyrings && \
-    apt_key_path=/etc/apt/keyrings/apt.llvm.org.asc; \
-    curl -sS -o $apt_key_path https://apt.llvm.org/llvm-snapshot.gpg.key && \
-    arch=$(dpkg --print-architecture); \
     codename=$(lsb_release -sc); \
-    cat <<EOF > /etc/apt/sources.list.d/llvm-${LLVM_MAJOR_VERSION}.list
-deb [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main                                                                                     deb-src [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main
-EOF
-
-RUN apt-get update && \
+    if [ "${codename}" != resolute ]; then \
+      mkdir -p /etc/apt/keyrings && \
+      apt_key_path=/etc/apt/keyrings/apt.llvm.org.asc; \
+      curl -sS -o $apt_key_path https://apt.llvm.org/llvm-snapshot.gpg.key && \
+      arch=$(dpkg --print-architecture); \
+      (echo "deb [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main"; \
+       echo "deb-src [arch=$arch signed-by=$apt_key_path] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_MAJOR_VERSION} main") \
+      > /etc/apt/sources.list.d/llvm-${LLVM_MAJOR_VERSION}.list; \
+    fi; \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install clang-${LLVM_MAJOR_VERSION} libc++-${LLVM_MAJOR_VERSION}-dev libunwind-${LLVM_MAJOR_VERSION}-dev llvm-${LLVM_MAJOR_VERSION}-dev
 
 # setup cmake
@@ -39,13 +40,17 @@ RUN apt-get update && \
     cmake ninja-build \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
-    libssl-dev libexpat1-dev libpcre3-dev libpcre2-dev libcap-dev \
+    libssl-dev libexpat1-dev libpcre2-dev libcap-dev \
     libhwloc-dev zlib1g-dev netcat-openbsd \
     tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
     libmaxminddb-dev libjansson-dev libcjose-dev \
     python3 python3-pip python3-virtualenv \
     python3-gunicorn python3-requests python3-httpbin
+
+RUN set -x; if [ $(lsb_release -sc) != "resolute" ]; then \
+    env DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3-dev; \
+    fi
 
 # Note: install pipenv with pip3 on Ubuntu 22.04 (jammy) since pipenv deb package is too old.
 # Also install pipenv as root user since root privilege is needed to run all tests in autest.
@@ -56,6 +61,14 @@ RUN set -x; if [ $(lsb_release -sc) = "jammy" ]; then \
     fi
 
 RUN type cmake; cmake --version
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+
+RUN set -x; if [ $(lsb_release -sc) = "resolute" ]; then \
+      mkdir -p /depends-libpcre3 && \
+      curl -sSL https://github.com/hnakamur/libpcre3-deb-docker/releases/download/8.39-15.1hn1ubuntu26.04/libpcre3-8.39-15.1hn1ubuntu26.04.tar.gz | tar zx -C /depends-libpcre3 --strip-components=2 && \
+      dpkg -i /depends-libpcre3/*.deb; \
+    fi
 
 ARG LUAJIT_DEB_VERSION
 ARG LUAJIT_DEB_OS_ID
@@ -113,7 +126,7 @@ RUN build_dir_fullpath=${SRC_DIR}/trafficserver/debian/build-$(dpkg-architecture
 #!/bin/bash
 set -eu
 cd ${build_dir_fullpath}/tests
-PIPENV_VENV_IN_PROJECT=True pipenv install 
+PIPENV_VENV_IN_PROJECT=True pipenv install
 
 sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
 env PYTHONPATH=${SRC_DIR}/trafficserver/gold_tests/remap:$PYTHONPATH} \
