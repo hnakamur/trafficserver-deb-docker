@@ -52,16 +52,6 @@ RUN set -x; if [ $(lsb_release -sc) != "resolute" ]; then \
     env DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3-dev; \
     fi
 
-# Note: install pipenv with pip3 on Ubuntu 22.04 (jammy) since pipenv deb package is too old.
-# Also install pipenv as root user since root privilege is needed to run all tests in autest.
-RUN set -x; if [ $(lsb_release -sc) = "jammy" ]; then \
-    pip3 install pipenv; \
-    else \
-    env DEBIAN_FRONTEND=noninteractive apt-get -y install pipenv; \
-    fi
-
-RUN type cmake; cmake --version
-
 RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 
 RUN set -x; if [ $(lsb_release -sc) = "resolute" ]; then \
@@ -77,24 +67,18 @@ RUN curl -sSL https://github.com/hnakamur/openresty-luajit-deb-docker/releases/d
 RUN dpkg -i /depends/*.deb
 
 ARG SRC_DIR=/src
-ARG BUILD_USER=build
-RUN useradd -m -d ${SRC_DIR} -s /bin/bash ${BUILD_USER}
-
-USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
 ARG GIT_TAG
 RUN git clone --depth 1 --branch ${GIT_TAG} https://github.com/apache/trafficserver
 ARG PKG_VERSION
 RUN tar cf - trafficserver | xz -c > trafficserver_${PKG_VERSION}.orig.tar.xz
 
-COPY --chown=build:build ./debian ${SRC_DIR}/trafficserver/debian/
+COPY --chown=root:root ./debian ${SRC_DIR}/trafficserver/debian/
 WORKDIR ${SRC_DIR}/trafficserver
 ARG PKG_REL_DISTRIB
 RUN sed -i "s/\${LLVM_MAJOR_VERSION}/${LLVM_MAJOR_VERSION}/" ${SRC_DIR}/trafficserver/debian/control
 RUN sed -i "s/DebRelDistrib/${PKG_REL_DISTRIB}/;s/UNRELEASED/$(lsb_release -cs)/" ${SRC_DIR}/trafficserver/debian/changelog
 RUN env CC=clang-${LLVM_MAJOR_VERSION} CXX=clang++-${LLVM_MAJOR_VERSION} dpkg-buildpackage -us -uc
-
-USER root
 
 ## setup_autest target
 FROM build_trafficserver AS setup_autest
@@ -108,43 +92,12 @@ RUN /usr/local/go/bin/go install github.com/summerwind/h2spec/cmd/h2spec@latest 
     mv /root/go/bin/h2spec /usr/local/bin/h2spec
 
 RUN cmake --build ./debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target install
-RUN chown -R ${BUILD_USER}:${BUILD_USER} /opt/trafficserver
-RUN mkdir -p /test
-RUN chown nobody:nogroup /test
 
-RUN build_dir=debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
-    cat <<EOF > /usr/local/bin/autest-all.sh
-#!/bin/bash
-set -eu
-cd ${SRC_DIR}/trafficserver
-cmake --build ${build_dir} --target autest --verbose
-EOF
-
-RUN build_dir_fullpath=${SRC_DIR}/trafficserver/debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH); \
-    arch=$(dpkg --print-architecture); \
-    cat <<EOF > /usr/local/bin/my-autest.sh
-#!/bin/bash
-set -eu
-cd ${build_dir_fullpath}/tests
-PIPENV_VENV_IN_PROJECT=True pipenv install
-
-sandbox_dir=/test/autest-sandbox-\$(date +%Y%m%dT%H%M%S)
-env PYTHONPATH=${SRC_DIR}/trafficserver/gold_tests/remap:$PYTHONPATH} \
-PIPENV_VENV_IN_PROJECT=True pipenv run env autest "\$@" \
-  --directory ${SRC_DIR}/trafficserver/tests/gold_tests \
-  --ats-bin=/opt/trafficserver/bin \
-  --proxy-verifier-bin ${build_dir_fullpath}/proxy-verifier-v2.12.0/linux-${arch} \
-  --build-root ${build_dir_fullpath} \
-  --sandbox \${sandbox_dir}
-EOF
-RUN chmod +x /usr/local/bin/autest-all.sh /usr/local/bin/my-autest.sh
-
-USER ${BUILD_USER}
 ENV LANG=C
 RUN QUILT_PATCHES=debian/patches quilt push -a
 
-USER root
-
 ## run_autest target
 FROM setup_autest AS run_autest
-RUN my-autest.sh run 2>&1 | tee /src/autest.log || :
+
+WORKDIR ${SRC_DIR}/trafficserver
+RUN cmake --build debian/build-$(dpkg-architecture -q DEB_HOST_MULTIARCH) --target autest --verbose 2>&1 | tee /src/autest.log || :
