@@ -11,51 +11,51 @@ OTEL_CPP_VERSION=1.3.0
 
 LOGUNLIMITED_BUILDER=logunlimited
 
-# Ubuntu 25.10
-deb-ubuntu2510: build-ubuntu2510
-	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10:/dist ats9-ubuntu2510 bash -c \
+# Ubuntu 26.04
+deb-ubuntu2604: build-ubuntu2604
+	docker run --rm -v ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04:/dist ats9-ubuntu2604 bash -c \
 	"cp /src/trafficserver*${PKG_VERSION}* /dist/"
-	tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/
+	tar zcf trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04.tar.gz ./trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04/
 
-build-ubuntu2510: buildkit-logunlimited
-	mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10
+build-ubuntu2604: buildkit-logunlimited
+	mkdir -p trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04
 	(set -x; \
 	git submodule foreach --recursive git remote -v; \
 	git submodule status --recursive; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target build_trafficserver \
-		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=25.10 \
-		--build-arg PKG_REL_DISTRIB=ubuntu25.10 \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=26.04 \
+		--build-arg PKG_REL_DISTRIB=ubuntu26.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
-		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu26.04 \
 		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
 		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
 		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
-		-t ats9-ubuntu2510 . \
-	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
-	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.build.log
+		-t ats9-ubuntu2604 . \
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04.build.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04.build.log
 
-run-ubuntu2510:
-	docker run --rm -it ats9-ubuntu2510 bash
+run-ubuntu2604:
+	docker run --rm -it ats9-ubuntu2604 bash
 
-autest-ubuntu2510: buildkit-logunlimited
+autest-ubuntu2604: buildkit-logunlimited
 	(set -x; \
 	docker buildx build --progress plain --builder ${LOGUNLIMITED_BUILDER} --load \
 		${DOCKER_NO_CACHE} \
 		--target run_autest \
-		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=25.10 \
-		--build-arg PKG_REL_DISTRIB=ubuntu25.10 \
+		--build-arg OS_TYPE=ubuntu --build-arg OS_VERSION=26.04 \
+		--build-arg PKG_REL_DISTRIB=ubuntu26.04 \
 		--build-arg PKG_VERSION=${PKG_VERSION} \
 		--build-arg LUAJIT_DEB_VERSION=${LUAJIT_DEB_VERSION} \
-		--build-arg LUAJIT_DEB_OS_ID=ubuntu25.10 \
+		--build-arg LUAJIT_DEB_OS_ID=ubuntu26.04 \
 		--build-arg NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION} \
 		--build-arg PROTOBUF_VERSION=${PROTOBUF_VERSION} \
 		--build-arg OTEL_CPP_VERSION=${OTEL_CPP_VERSION} \
-		-t ats9-ubuntu2510 . \
-	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
-	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu25.10.autest.log
+		-t ats9-ubuntu2604 . \
+	) 2>&1 | tee trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04.autest.log
+	xz --force trafficserver-${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04/trafficserver_${PKG_VERSION}-${PKG_REL_PREFIX}ubuntu26.04.autest.log
 
 # Ubuntu 24.04
 deb-ubuntu2404: build-ubuntu2404
