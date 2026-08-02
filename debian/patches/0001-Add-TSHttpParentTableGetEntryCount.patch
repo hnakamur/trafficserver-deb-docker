@@ -59,7 +59,7 @@ Subject: [PATCH 1/4] Add TSHttpParentTableGetEntryCount
 +}
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -9034,3 +9034,14 @@
+@@ -9044,3 +9044,14 @@
    }
    return retval;
  }

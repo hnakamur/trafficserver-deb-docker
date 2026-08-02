@@ -163,7 +163,7 @@ Subject: [PATCH 4/4] Add ts.client_request.normalize_accept_encoding to Lua
  #include "proxy/PluginHttpConnect.h"
  #include "../iocore/net/P_Net.h"
  #include "../iocore/net/P_UnixNet.h"
-@@ -9045,3 +9046,22 @@
+@@ -9055,3 +9056,22 @@
    HttpTransact::State *s  = &(sm->t_state);
    return s->parent_params && s->parent_params->parent_table ? s->parent_params->parent_table->getEntryCount() : 0;
  }
@@ -188,7 +188,7 @@ Subject: [PATCH 4/4] Add ts.client_request.normalize_accept_encoding to Lua
 +}
 --- a/src/proxy/http/HttpTransactHeaders.cc
 +++ b/src/proxy/http/HttpTransactHeaders.cc
-@@ -1193,10 +1193,8 @@
+@@ -1221,10 +1221,8 @@
  }
  
  void
@@ -200,7 +200,7 @@ Subject: [PATCH 4/4] Add ts.client_request.normalize_accept_encoding to Lua
    if (normalize_ae) {
      MIMEField *ae_field = header->field_find(MIME_FIELD_ACCEPT_ENCODING, MIME_LEN_ACCEPT_ENCODING);
  
-@@ -1251,6 +1249,12 @@
+@@ -1279,6 +1277,12 @@
  }
  
  void
