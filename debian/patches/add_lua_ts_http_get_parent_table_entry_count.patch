@@ -51,7 +51,7 @@
 +}
 --- a/src/traffic_server/InkAPI.cc
 +++ b/src/traffic_server/InkAPI.cc
-@@ -10436,3 +10436,15 @@
+@@ -10454,3 +10454,15 @@
    HttpSM *sm = (HttpSM *)txnp;
    return (TSIOBufferReader)sm->get_postbuf_clone_reader();
  }
