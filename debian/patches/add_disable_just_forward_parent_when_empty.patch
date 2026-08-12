@@ -1,0 +1,195 @@
+From 8e508c7764c0d9f212993c6d955be997f821e40b Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Tue, 11 Aug 2026 13:20:41 +0900
+Subject: [PATCH 1/2] Allow origin DNS when parents empty and
+ disable_just_forward_to_parent_when_empty is set
+
+---
+ doc/admin-guide/files/records.config.en.rst |  8 ++++++++
+ mgmt/RecordsConfig.cc                       |  2 ++
+ proxy/ParentSelection.cc                    |  9 +++++++++
+ proxy/ParentSelection.h                     |  1 +
+ proxy/http/HttpConfig.cc                    | 19 +++++++++++--------
+ proxy/http/HttpConfig.h                     |  9 +++++----
+ proxy/http/HttpSM.cc                        |  3 ++-
+ proxy/http/HttpTransact.cc                  | 15 +++++++++++----
+ 8 files changed, 49 insertions(+), 17 deletions(-)
+
+diff --git a/doc/admin-guide/files/records.config.en.rst b/doc/admin-guide/files/records.config.en.rst
+index bbf9ff9..fc09807 100644
+--- a/doc/admin-guide/files/records.config.en.rst
++++ b/doc/admin-guide/files/records.config.en.rst
+@@ -1394,6 +1394,14 @@ Parent Proxy Configuration
+ 
+    Don't try to resolve DNS, forward all DNS requests to the parent. This is off (``0``) by default.
+ 
++.. ts:cv:: CONFIG proxy.config.http.disable_just_forward_to_parent_when_empty INT 0
++   :reloadable:
++
++   When enabled, ignore ``proxy.config.http.no_dns_just_forward_to_parent`` when there are
++   no parents configured (for example, after reloading an empty ``parent.config``). In that
++   case Traffic Server performs the origin server DNS lookup and contacts the origin directly
++   instead of failing the request. This is off (``0``) by default.
++
+ .. ts:cv:: CONFIG proxy.local.http.parent_proxy.disable_connect_tunneling INT 0
+ 
+ .. ts:cv:: CONFIG proxy.config.http.parent_proxy.self_detect INT 2
+diff --git a/mgmt/RecordsConfig.cc b/mgmt/RecordsConfig.cc
+index 5e6c29f..0b74dc3 100644
+--- a/mgmt/RecordsConfig.cc
++++ b/mgmt/RecordsConfig.cc
+@@ -349,6 +349,8 @@ static const RecordElement RecordsConfig[] =
+   ,
+   {RECT_CONFIG, "proxy.config.http.no_dns_just_forward_to_parent", RECD_INT, "0", RECU_DYNAMIC, RR_NULL, RECC_INT, "[0-1]", RECA_NULL}
+   ,
++  {RECT_CONFIG, "proxy.config.http.disable_just_forward_to_parent_when_empty", RECD_INT, "0", RECU_DYNAMIC, RR_NULL, RECC_INT, "[0-1]", RECA_NULL}
++  ,
+   {RECT_CONFIG, "proxy.config.http.uncacheable_requests_bypass_parent", RECD_INT, "1", RECU_DYNAMIC, RR_NULL, RECC_INT, "[0-1]", RECA_NULL}
+   ,
+   {RECT_CONFIG, "proxy.config.http.no_origin_server_dns", RECD_INT, "0", RECU_DYNAMIC, RR_NULL, RECC_INT, "[0-1]", RECA_NULL}
+diff --git a/proxy/ParentSelection.cc b/proxy/ParentSelection.cc
+index 040f600..423bb5b 100644
+--- a/proxy/ParentSelection.cc
++++ b/proxy/ParentSelection.cc
+@@ -257,6 +257,15 @@ ParentConfigParams::parentExists(HttpRequestData *rdata)
+   return false;
+ }
+ 
++bool
++ParentConfigParams::hasAnyParent() const
++{
++  // Return true if any parent rule (entry) is configured, regardless of whether a
++  // particular request matches it or any parent is currently available. An empty
++  // parent.config results in getEntryCount() == 0 and DefaultParent == nullptr.
++  return DefaultParent != nullptr || parent_table->getEntryCount() > 0;
++}
++
+ int ParentConfig::m_id = 0;
+ 
+ void
+diff --git a/proxy/ParentSelection.h b/proxy/ParentSelection.h
+index f6b0889..4250d7d 100644
+--- a/proxy/ParentSelection.h
++++ b/proxy/ParentSelection.h
+@@ -374,6 +374,7 @@ public:
+   void findParent(HttpRequestData *rdata, ParentResult *result, unsigned int fail_threshold, unsigned int retry_time);
+   void nextParent(HttpRequestData *rdata, ParentResult *result, unsigned int fail_threshold, unsigned int retry_time);
+   bool parentExists(HttpRequestData *rdata);
++  bool hasAnyParent() const;
+ 
+   // implementation of functions from ParentSelectionStrategy.
+   void
+diff --git a/proxy/http/HttpConfig.cc b/proxy/http/HttpConfig.cc
+index 6c27ee8..451b7c3 100644
+--- a/proxy/http/HttpConfig.cc
++++ b/proxy/http/HttpConfig.cc
+@@ -1177,6 +1177,8 @@ HttpConfig::startup()
+   HttpEstablishStaticConfigByte(c.oride.forward_connect_method, "proxy.config.http.forward_connect_method");
+ 
+   HttpEstablishStaticConfigByte(c.no_dns_forward_to_parent, "proxy.config.http.no_dns_just_forward_to_parent");
++  HttpEstablishStaticConfigByte(c.disable_just_forward_to_parent_when_empty,
++                                "proxy.config.http.disable_just_forward_to_parent_when_empty");
+   HttpEstablishStaticConfigByte(c.oride.uncacheable_requests_bypass_parent, "proxy.config.http.uncacheable_requests_bypass_parent");
+   HttpEstablishStaticConfigByte(c.oride.doc_in_cache_skip_dns, "proxy.config.http.doc_in_cache_skip_dns");
+ 
+@@ -1456,14 +1458,15 @@ HttpConfig::reconfigure()
+   params->outbound_ip4 = m_master.outbound_ip4;
+   params->outbound_ip6 = m_master.outbound_ip6;
+ 
+-  params->proxy_hostname                           = ats_strdup(m_master.proxy_hostname);
+-  params->proxy_hostname_len                       = (params->proxy_hostname) ? strlen(params->proxy_hostname) : 0;
+-  params->no_dns_forward_to_parent                 = INT_TO_BOOL(m_master.no_dns_forward_to_parent);
+-  params->oride.uncacheable_requests_bypass_parent = INT_TO_BOOL(m_master.oride.uncacheable_requests_bypass_parent);
+-  params->no_origin_server_dns                     = INT_TO_BOOL(m_master.no_origin_server_dns);
+-  params->use_client_target_addr                   = m_master.use_client_target_addr;
+-  params->use_client_source_port                   = INT_TO_BOOL(m_master.use_client_source_port);
+-  params->oride.maintain_pristine_host_hdr         = INT_TO_BOOL(m_master.oride.maintain_pristine_host_hdr);
++  params->proxy_hostname                            = ats_strdup(m_master.proxy_hostname);
++  params->proxy_hostname_len                        = (params->proxy_hostname) ? strlen(params->proxy_hostname) : 0;
++  params->no_dns_forward_to_parent                  = INT_TO_BOOL(m_master.no_dns_forward_to_parent);
++  params->disable_just_forward_to_parent_when_empty = INT_TO_BOOL(m_master.disable_just_forward_to_parent_when_empty);
++  params->oride.uncacheable_requests_bypass_parent  = INT_TO_BOOL(m_master.oride.uncacheable_requests_bypass_parent);
++  params->no_origin_server_dns                      = INT_TO_BOOL(m_master.no_origin_server_dns);
++  params->use_client_target_addr                    = m_master.use_client_target_addr;
++  params->use_client_source_port                    = INT_TO_BOOL(m_master.use_client_source_port);
++  params->oride.maintain_pristine_host_hdr          = INT_TO_BOOL(m_master.oride.maintain_pristine_host_hdr);
+ 
+   params->disable_ssl_parenting        = INT_TO_BOOL(m_master.disable_ssl_parenting);
+   params->oride.forward_connect_method = INT_TO_BOOL(m_master.oride.forward_connect_method);
+diff --git a/proxy/http/HttpConfig.h b/proxy/http/HttpConfig.h
+index 53d7bbf..c06a817 100644
+--- a/proxy/http/HttpConfig.h
++++ b/proxy/http/HttpConfig.h
+@@ -817,10 +817,11 @@ public:
+   ///////////////////////////////////////////////////////////////////
+   MgmtByte disable_ssl_parenting = 0;
+ 
+-  MgmtByte no_dns_forward_to_parent = 0;
+-  MgmtByte no_origin_server_dns     = 0;
+-  MgmtByte use_client_target_addr   = 0;
+-  MgmtByte use_client_source_port   = 0;
++  MgmtByte no_dns_forward_to_parent                  = 0;
++  MgmtByte disable_just_forward_to_parent_when_empty = 0; // When enabled and there are no parents, allow origin server DNS lookups
++  MgmtByte no_origin_server_dns                      = 0;
++  MgmtByte use_client_target_addr                    = 0;
++  MgmtByte use_client_source_port                    = 0;
+ 
+   MgmtByte enable_http_stats = 1; // Can be "slow"
+ 
+diff --git a/proxy/http/HttpSM.cc b/proxy/http/HttpSM.cc
+index 85b87e2..a5cf7f2 100644
+--- a/proxy/http/HttpSM.cc
++++ b/proxy/http/HttpSM.cc
+@@ -7850,7 +7850,8 @@ HttpSM::set_next_state()
+       call_transact_and_set_next_state(nullptr);
+       break;
+     } else if (t_state.dns_info.looking_up == HttpTransact::ORIGIN_SERVER && t_state.http_config_param->no_dns_forward_to_parent &&
+-               t_state.parent_result.result != PARENT_UNDEFINED) {
++               t_state.parent_result.result != PARENT_UNDEFINED &&
++               (!t_state.http_config_param->disable_just_forward_to_parent_when_empty || t_state.parent_params->hasAnyParent())) {
+       t_state.dns_info.lookup_success = true;
+       call_transact_and_set_next_state(nullptr);
+       break;
+diff --git a/proxy/http/HttpTransact.cc b/proxy/http/HttpTransact.cc
+index 527c139..f458aab 100644
+--- a/proxy/http/HttpTransact.cc
++++ b/proxy/http/HttpTransact.cc
+@@ -704,8 +704,11 @@ find_server_and_update_current_info(HttpTransact::State *s)
+ 
+   case PARENT_DIRECT:
+     // if the configuration does not allow the origin to be dns'd
+-    // we're unable to go direct to the origin.
+-    if (s->http_config_param->no_dns_forward_to_parent) {
++    // we're unable to go direct to the origin. When
++    // proxy.config.http.disable_just_forward_to_parent_when_empty is enabled and
++    // there are no parents configured, allow the origin server DNS lookup.
++    if (s->http_config_param->no_dns_forward_to_parent &&
++        (!s->http_config_param->disable_just_forward_to_parent_when_empty || s->parent_params->hasAnyParent())) {
+       Warning("no available parents and the config proxy.config.http.no_dns_just_forward_to_parent, prevents origin lookups.");
+       s->parent_result.result = PARENT_FAIL;
+       return HttpTransact::HOST_NONE;
+@@ -1870,7 +1873,9 @@ HttpTransact::PPDNSLookup(State *s)
+     if (!s->current.server->dst_addr.isValid()) {
+       if (s->current.request_to == PARENT_PROXY) {
+         TRANSACT_RETURN(SM_ACTION_DNS_LOOKUP, PPDNSLookupAPICall);
+-      } else if (s->parent_result.result == PARENT_DIRECT && s->http_config_param->no_dns_forward_to_parent != 1) {
++      } else if (s->parent_result.result == PARENT_DIRECT &&
++                 (s->http_config_param->no_dns_forward_to_parent == 0 ||
++                  (s->http_config_param->disable_just_forward_to_parent_when_empty && !s->parent_params->hasAnyParent()))) {
+         // We ran out of parents but parent configuration allows us to go to Origin Server directly
+         CallOSDNSLookup(s);
+         return;
+@@ -3435,7 +3440,9 @@ HttpTransact::HandleCacheOpenReadMiss(State *s)
+     if (!s->current.server->dst_addr.isValid()) {
+       ink_release_assert(s->parent_result.result == PARENT_DIRECT || s->current.request_to == PARENT_PROXY ||
+                          s->http_config_param->no_dns_forward_to_parent != 0);
+-      if (s->parent_result.result == PARENT_DIRECT && s->http_config_param->no_dns_forward_to_parent != 1) {
++      if (s->parent_result.result == PARENT_DIRECT &&
++          (s->http_config_param->no_dns_forward_to_parent == 0 ||
++           (s->http_config_param->disable_just_forward_to_parent_when_empty && !s->parent_params->hasAnyParent()))) {
+         return CallOSDNSLookup(s);
+       }
+       if (s->current.request_to == PARENT_PROXY) {
+-- 
+2.53.0
+

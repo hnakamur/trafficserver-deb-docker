@@ -1,3 +1,9 @@
+trafficserver (9.2.15-2hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Add add_disable_just_forward_parent_when_empty.patch
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Wed, 12 Aug 2026 14:33:35 +0900
+
 trafficserver (9.2.15-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * 9.2.15
