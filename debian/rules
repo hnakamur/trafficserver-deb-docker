@@ -10,6 +10,8 @@ ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),mips mipsel))
   export DEB_LDFLAGS_MAINT_APPEND += -latomic
 endif
 
+UBUNTU_CODENAME := $(shell dpkg-parsechangelog -S Distribution)
+
 # Get build architecture. ./configure is different on Linux
 include /usr/share/dpkg/architecture.mk
 # Get rid f dpkg-parsechangelog
@@ -68,6 +70,11 @@ endif
 
 override_dh_install:
 	dh_install
+	case "$(UBUNTU_CODENAME)" in \
+	  jammy|noble) \
+	    dh_install -ptrafficserver-experimental-plugins usr/lib/trafficserver/modules/otel_tracer.so; \
+	    ;; \
+	esac
 	dh_missing --list-missing
 	./debian/change_config.pl debian/trafficserver/opt/trafficserver/etc/records.config
 	# Lintian fixes

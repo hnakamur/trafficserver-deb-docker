@@ -80,10 +80,14 @@ USER ${BUILD_USER}
 WORKDIR ${SRC_DIR}
 RUN curl -sSL https://github.com/open-telemetry/opentelemetry-cpp/archive/refs/tags/v${OTEL_CPP_VERSION}.tar.gz | tar zx
 WORKDIR ${SRC_DIR}/opentelemetry-cpp-${OTEL_CPP_VERSION}
-RUN cmake -B build -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_JAEGER=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=OFF -DWITH_OTLP_HTTP=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON
-RUN cmake --build build --config Release --parallel --verbose
+RUN set -x; if [ $(lsb_release -sc) != "resolute" ]; then \
+      cmake -B build -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_JAEGER=OFF -DWITH_OTLP=ON -DWITH_OTLP_GRPC=OFF -DWITH_OTLP_HTTP=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON && \
+      cmake --build build --config Release --parallel --verbose; \
+    fi
 USER root
-RUN cmake --install build --prefix /usr/local/
+RUN set -x; if [ $(lsb_release -sc) != "resolute" ]; then \
+      cmake --install build --prefix /usr/local/; \
+    fi
 
 ## build trafficserver
 FROM build_otel_cpp AS build_trafficserver
