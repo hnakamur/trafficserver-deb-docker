@@ -11,7 +11,7 @@ RUN apt-get update && \
     build-essential cmake ccache pkgconf bison flex gettext \
     debhelper dpkg-dev lsb-release xz-utils \
     dpkg-dev git distcc file wget openssl hwloc intltool-debian \
-    libssl-dev libexpat1-dev libpcre3-dev libcap-dev \
+    libssl-dev libexpat1-dev libcap-dev \
     libhwloc-dev zlib1g-dev \
     tcl-dev tcl8.6-dev libjemalloc-dev liblzma-dev \
     libhiredis-dev libbrotli-dev libncurses-dev libgeoip-dev libmagick++-dev \
@@ -21,6 +21,15 @@ RUN apt-get update && \
     libmemcached-dev libcrypto++-dev \
     python3 python3-pip python3-virtualenv \
     python3-gunicorn python3-requests python3-httpbin
+
+RUN set -x; if [ $(lsb_release -sc) = "resolute" ]; then \
+      mkdir -p /depends-libpcre3 && \
+      curl -sSL https://github.com/hnakamur/libpcre3-deb-docker/releases/download/8.39-15.1hn1ubuntu26.04/libpcre3-8.39-15.1hn1ubuntu26.04.tar.gz | tar zx -C /depends-libpcre3 --strip-components=2 && \
+      dpkg -i /depends-libpcre3/*.deb && \
+      rm -r /depends-libpcre3; \
+    else \
+      env DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3-dev; \
+    fi
 
 # Note: install pipenv with pip3 on Ubuntu 22.04 (jammy) since pipenv deb package is too old.
 # Also install pipenv as root user since root privilege is needed to run all tests in autest.
