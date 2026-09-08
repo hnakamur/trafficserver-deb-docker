@@ -1,7 +1,7 @@
-From b90db04395762c76048216f714dcbc4b0afacfe2 Mon Sep 17 00:00:00 2001
+From 6db24befcf100f93d0c0362df9f3261b9fce0afa Mon Sep 17 00:00:00 2001
 From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Fri, 17 Mar 2023 11:46:28 +0900
-Subject: [PATCH] Add support for escaping LTSV in access log
+Date: Tue, 8 Sep 2026 21:42:47 +0900
+Subject: [PATCH 2/5] Add support for escaping LTSV in access log
 
 ---
  include/proxy/logging/LogField.h           |  2 +-
@@ -10,10 +10,10 @@ Subject: [PATCH] Add support for escaping LTSV in access log
  3 files changed, 78 insertions(+), 1 deletion(-)
 
 diff --git a/include/proxy/logging/LogField.h b/include/proxy/logging/LogField.h
-index dcc5b23bb..98f8e99dd 100644
+index 1fbb3dc21..92e1db207 100644
 --- a/include/proxy/logging/LogField.h
 +++ b/include/proxy/logging/LogField.h
-@@ -33,7 +33,7 @@
+@@ -38,7 +38,7 @@
  #include "proxy/logging/LogFieldAliasMap.h"
  #include "proxy/Milestones.h"
  
@@ -23,10 +23,10 @@ index dcc5b23bb..98f8e99dd 100644
  class LogAccess;
  
 diff --git a/src/proxy/logging/LogAccess.cc b/src/proxy/logging/LogAccess.cc
-index b2fc8d0da..0724a5655 100644
+index 33d2f2f06..2fa75bc24 100644
 --- a/src/proxy/logging/LogAccess.cc
 +++ b/src/proxy/logging/LogAccess.cc
-@@ -769,6 +769,79 @@ unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice)
+@@ -902,6 +902,79 @@ unmarshal_str_json(char **buf, char *dest, int len, LogSlice *slice)
    return -1;
  }
  
@@ -106,7 +106,7 @@ index b2fc8d0da..0724a5655 100644
  } // end anonymous namespace
  
  /*-------------------------------------------------------------------------
-@@ -789,6 +862,8 @@ LogAccess::unmarshal_str(char **buf, char *dest, int len, LogSlice *slice, LogEs
+@@ -922,6 +995,8 @@ LogAccess::unmarshal_str(char **buf, char *dest, int len, LogSlice *slice, LogEs
  
    if (LOG_ESCAPE_JSON == escape_type) {
      return unmarshal_str_json(buf, dest, len, slice);
@@ -128,6 +128,3 @@ index 0c3b438c3..dd41d32ec 100644
      } else if (!strncasecmp(escape.c_str(), "none", 4)) {
        escape_type = LOG_ESCAPE_NONE;
      } else {
--- 
-2.43.0
-

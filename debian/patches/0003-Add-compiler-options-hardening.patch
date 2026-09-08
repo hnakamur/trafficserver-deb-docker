@@ -1,7 +1,7 @@
-From fbcf834ef6665520ed554ff40bb3f0efd3f06aad Mon Sep 17 00:00:00 2001
+From eeb3e9e4cef046508e65423e9679cfe0a826c0b8 Mon Sep 17 00:00:00 2001
 From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Sun, 8 Feb 2026 20:57:23 +0900
-Subject: [PATCH] Add compiler hardening flags
+Date: Tue, 8 Sep 2026 21:43:32 +0900
+Subject: [PATCH 3/5] Add compiler hardening flags
 
 ---
  CMakeLists.txt        |  2 ++
@@ -9,9 +9,11 @@ Subject: [PATCH] Add compiler hardening flags
  2 files changed, 30 insertions(+)
  create mode 100644 cmake/hardening.cmake
 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 01e1f4129..477e554d4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -707,6 +707,8 @@
+@@ -869,6 +869,8 @@ add_compile_options(
  )
  add_compile_options("$<$<CXX_COMPILER_ID:GNU>:-Wno-format-truncation>")
  
@@ -20,6 +22,9 @@ Subject: [PATCH] Add compiler hardening flags
  if(NOT EXTERNAL_YAML_CPP)
    include(subproject_version)
    subproject_version(YAML_CPP YAMLCPP_LIB_VERSION)
+diff --git a/cmake/hardening.cmake b/cmake/hardening.cmake
+new file mode 100644
+index 000000000..8996cfd8c
 --- /dev/null
 +++ b/cmake/hardening.cmake
 @@ -0,0 +1,28 @@
