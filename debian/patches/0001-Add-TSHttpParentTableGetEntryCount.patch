@@ -9,11 +9,9 @@ Subject: [PATCH 1/5] Add TSHttpParentTableGetEntryCount
  src/api/InkAPI.cc          | 11 +++++++++++
  3 files changed, 33 insertions(+)
 
-diff --git a/include/ts/ts.h b/include/ts/ts.h
-index cff3a73b6..9e09c5090 100644
 --- a/include/ts/ts.h
 +++ b/include/ts/ts.h
-@@ -3368,3 +3368,8 @@ std::tuple<int, int> TSLogIntUnmarshal(char **buf, char *dest, int len);
+@@ -3375,3 +3375,8 @@
     Helper function to unmarshal an address
  */
  std::tuple<int, int> TSLogAddrUnmarshal(char **buf, char *dest, int len);
@@ -22,11 +20,9 @@ index cff3a73b6..9e09c5090 100644
 + * Get entry count in parent.config.
 + */
 +int TSHttpParentTableGetEntryCount(TSHttpTxn txnp);
-diff --git a/plugins/lua/ts_lua_http.cc b/plugins/lua/ts_lua_http.cc
-index cac64dc44..065b4f46f 100644
 --- a/plugins/lua/ts_lua_http.cc
 +++ b/plugins/lua/ts_lua_http.cc
-@@ -132,6 +132,8 @@ static int  ts_lua_http_req_transform_get_downstream_watermark_bytes(lua_State *
+@@ -132,6 +132,8 @@
  static int  ts_lua_http_req_transform_set_downstream_watermark_bytes(lua_State *L);
  static int  ts_lua_http_req_transform_set_upstream_bytes(lua_State *L);
  
@@ -35,7 +31,7 @@ index cac64dc44..065b4f46f 100644
  void
  ts_lua_inject_http_api(lua_State *L)
  {
-@@ -332,6 +334,9 @@ ts_lua_inject_http_misc_api(lua_State *L)
+@@ -332,6 +334,9 @@
    lua_pushcfunction(L, ts_lua_http_get_ssn_remote_addr);
    lua_setfield(L, -2, "get_ssn_remote_addr");
  
@@ -45,7 +41,7 @@ index cac64dc44..065b4f46f 100644
    ts_lua_inject_server_state_variables(L);
  }
  
-@@ -1263,3 +1268,15 @@ ts_lua_http_req_transform_set_upstream_bytes(lua_State *L)
+@@ -1263,3 +1268,15 @@
  {
    return ts_lua_http_resp_transform_set_downstream_bytes(L);
  }
@@ -61,11 +57,9 @@ index cac64dc44..065b4f46f 100644
 +  lua_pushinteger(L, (lua_Integer)count);
 +  return 1;
 +}
-diff --git a/src/api/InkAPI.cc b/src/api/InkAPI.cc
-index 1d4d3c9d3..cf8f18750 100644
 --- a/src/api/InkAPI.cc
 +++ b/src/api/InkAPI.cc
-@@ -9329,3 +9329,14 @@ TSLogAddrUnmarshal(char **buf, char *dest, int len)
+@@ -9388,3 +9388,14 @@
  
    return {-1, -1};
  }

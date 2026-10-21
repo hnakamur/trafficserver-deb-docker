@@ -116,15 +116,15 @@ index 33d2f2f06..2fa75bc24 100644
  
    char *val_buf = *buf;
 diff --git a/src/proxy/logging/YamlLogConfigDecoders.cc b/src/proxy/logging/YamlLogConfigDecoders.cc
-index 0c3b438c3..dd41d32ec 100644
+index cbabf591d..769a10186 100644
 --- a/src/proxy/logging/YamlLogConfigDecoders.cc
 +++ b/src/proxy/logging/YamlLogConfigDecoders.cc
-@@ -75,6 +75,8 @@ convert<std::unique_ptr<LogFormat>>::decode(const Node &node, std::unique_ptr<Lo
+@@ -77,6 +77,8 @@ convert<std::unique_ptr<LogFormat>>::decode(const Node &node, std::unique_ptr<Lo
      std::string escape = node["escape"].as<std::string>();
-     if (!strncasecmp(escape.c_str(), "json", 4)) {
+     if (ts::iequals(escape, "json")) {
        escape_type = LOG_ESCAPE_JSON;
-+    } else if (!strncasecmp(escape.c_str(), "ltsv", 4)) {
++    } else if (ts::iequals(escape, "ltsv")) {
 +      escape_type = LOG_ESCAPE_LTSV;
-     } else if (!strncasecmp(escape.c_str(), "none", 4)) {
+     } else if (ts::iequals(escape, "none")) {
        escape_type = LOG_ESCAPE_NONE;
      } else {

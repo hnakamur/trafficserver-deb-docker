@@ -1,0 +1,34 @@
+From 1d6f44bc01ec64cecf5aef365ad7ae72abcd3ad8 Mon Sep 17 00:00:00 2001
+From: kansei <34761603+kanseiishikawa@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 20:35:03 +0900
+Subject: [PATCH] Fix ATS crashes when reloading parent.config
+
+---
+ src/proxy/http/HttpTransact.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/proxy/http/HttpTransact.cc b/src/proxy/http/HttpTransact.cc
+index 100facb55..09e28caf0 100644
+--- a/src/proxy/http/HttpTransact.cc
++++ b/src/proxy/http/HttpTransact.cc
+@@ -809,6 +809,7 @@ find_server_and_update_current_info(HttpTransact::State *s)
+     if (s->txn_conf->no_dns_forward_to_parent) {
+       Warning("no available parents and the config proxy.config.http.no_dns_just_forward_to_parent, prevents origin lookups.");
+       s->parent_result.result = ParentResultType::FAIL;
++      s->current.request_to   = ResolveInfo::HOST_NONE;
+       return ResolveInfo::HOST_NONE;
+     }
+   /* fall through */
+@@ -3046,6 +3047,9 @@ HttpTransact::HandleCacheOpenReadHit(State *s)
+         }
+         // override the default version with what the server has
+         http_version = s->current.server->http_version;
++      } else {
++        handle_parent_down(s);
++        return;
+       }
+ 
+       TxnDbg(dbg_ctl_http_trans, "CacheOpenReadHit - version %d.%d", http_version.get_major(), http_version.get_minor());
+-- 
+2.53.0
+

@@ -1,3 +1,10 @@
+trafficserver (10.2.1-1hn1DebRelDistrib) UNRELEASED; urgency=medium
+
+  * Upstream 10.2.1
+  * Add 0001-Fix-ATS-crashes-when-reloading-parent.config.patch
+
+ -- Hiroaki Nakamura <hnakamur@gmail.com>  Wed, 21 Oct 2026 20:45:01 +0900
+
 trafficserver (10.2.0-1hn1DebRelDistrib) UNRELEASED; urgency=medium
 
   * Upstream 10.2.0
