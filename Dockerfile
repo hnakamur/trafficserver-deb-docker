@@ -48,17 +48,25 @@ RUN apt-get update && \
     python3 python3-pip python3-virtualenv \
     python3-gunicorn python3-requests python3-httpbin
 
-RUN set -x; if [ $(lsb_release -sc) != "resolute" ]; then \
-    env DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3-dev; \
-    fi
-
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
-
-RUN set -x; if [ $(lsb_release -sc) = "resolute" ]; then \
+RUN set -x; case $(lsb_release -sc) in \
+    trixie) \
+      mkdir -p /depends-libpcre3 && \
+      curl -sSL https://github.com/hnakamur/libpcre3-deb-docker/releases/download/8.39-15.1hn1debian13/libpcre3-8.39-15.1hn1debian13.tar.gz | tar zx -C /depends-libpcre3 --strip-components=2 && \
+      dpkg -i /depends-libpcre3/*.deb && \
+      rm -r /depends-libpcre3; \
+      ;; \
+    resolute) \
       mkdir -p /depends-libpcre3 && \
       curl -sSL https://github.com/hnakamur/libpcre3-deb-docker/releases/download/8.39-15.1hn1ubuntu26.04/libpcre3-8.39-15.1hn1ubuntu26.04.tar.gz | tar zx -C /depends-libpcre3 --strip-components=2 && \
-      dpkg -i /depends-libpcre3/*.deb; \
-    fi
+      dpkg -i /depends-libpcre3/*.deb && \
+      rm -r /depends-libpcre3; \
+      ;; \
+    *) \
+      env DEBIAN_FRONTEND=noninteractive apt-get -y install libpcre3-dev; \
+      ;; \
+    esac
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 
 ARG LUAJIT_DEB_VERSION
 ARG LUAJIT_DEB_OS_ID
